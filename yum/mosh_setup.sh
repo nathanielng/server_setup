@@ -21,3 +21,9 @@ echo ">>>>> 7 >>>>> start server: src/frontend/mosh-server"
 cd src/frontend
 ./mosh-server
 
+ps -ef | grep mosh
+if [ "$?" -ne 0 ]; then
+    echo "ERROR: failed to start mosh-server"
+    exit 1
+fi
+
