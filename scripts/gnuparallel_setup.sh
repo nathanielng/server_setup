@@ -2,7 +2,7 @@
 if [ ! "$1" = "" ]; then
     PREFIX=${1}
 elif [ "$PREFIX" = "" ]; then
-    PREFIX=$HOME
+    PREFIX=$HOME/.local
 fi
 echo "GNU Parallel will be installed to the folder: $PREFIX"
 
