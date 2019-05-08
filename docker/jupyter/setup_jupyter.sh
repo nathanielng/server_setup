@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Ask user for password and store it in an environment variable
-JUPYTER_HASH=`python -c 'from notebook.auth import passwd; print(passwd());'`
+if [ "$1" = "" ]; then
+    # Ask user for password and store it in an environment variable
+    JUPYTER_HASH=`python -c 'from notebook.auth import passwd; print(passwd());'`
+else
+    # Use first argument as password for jupyter notebook
+    JUPYTER_HASH=`python -c 'from notebook.auth import passwd; print(passwd("$1"));'`
+fi
 
 mkdir -p $HOME/.jupyter
 cd $HOME/.jupyter
