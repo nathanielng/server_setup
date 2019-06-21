@@ -1,4 +1,6 @@
 scripts/gotop
+scripts/terraform
 docker/volumes
 docker/gitea/gitea
-
+terraform.tfstate*
+.terraform
