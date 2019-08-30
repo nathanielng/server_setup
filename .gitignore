@@ -1,3 +1,4 @@
+id_ed25519*
 scripts/gotop
 scripts/terraform
 docker/volumes
