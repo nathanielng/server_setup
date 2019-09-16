@@ -1,4 +1,6 @@
 id_ed25519*
+*-keypair
+
 scripts/gotop
 scripts/terraform
 docker/volumes

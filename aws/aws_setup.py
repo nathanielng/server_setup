@@ -71,6 +71,16 @@ def launch_instance(key_name, security_group):
     return response
 
 
+def describe_instances(instance_ids=None):
+    client = boto3.client('ec2', AVAILABILITY_ZONE)
+    if instance_ids is None:
+        return client.describe_instances()
+    else:
+        return client.describe_instances(
+            InstanceIds=instance_ids
+        )
+
+
 def terminate_instance(ids):
     ec2 = boto3.resource('ec2')
     response = ec2.instances.filter(InstanceIds=ids).terminate()
@@ -126,6 +136,22 @@ def main(args):
     if args.launch_instance is True:
         response = launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
         print(response)
+    elif args.instances is True:
+        response = describe_instances()
+        reservations = response['Reservations']
+        print('InstanceId | InstanceType | KeyName | AvailabilityZone | PublicDnsName ')
+        print('===========|==============|=========|==================|===============')
+        for i, reservation in enumerate(reservations):
+            instance = reservation['Instances'][0]
+            print('{InstanceId} | {InstanceType} | {KeyName}'.format(**instance), end='')
+            if 'AvailabilityZone' in instance.keys():
+                print(' | {AvailabilityZone}'.format(**instance), end='')
+            else:
+                print(' | - ', end='')
+            if 'PublicDnsName' in instance.keys():
+                print(' | {PublicDnsName}'.format(**instance))
+            else:
+                print(' | - ')
     elif args.keypairs is True:
         keynames = get_key_pairs()
         print("-----AWS IAM Key Pairs-----")
@@ -152,6 +178,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--launch_instance', action='store_true',
         help='Launch an AWS EC2 Instance')
+    parser.add_argument('--instances', action='store_true',
+        help='List AWS instances')
     parser.add_argument('--keypairs', action='store_true',
         help='List AWS keypairs')
     parser.add_argument('--security_groups', action='store_true',
