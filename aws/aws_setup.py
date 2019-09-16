@@ -59,7 +59,7 @@ def launch_instance(key_name, security_group):
 
     # Create EC2 Instance
     ec2 = boto3.resource('ec2')
-    ec2.create_instances(
+    response = ec2.create_instances(
         ImageId=AMI_IMAGE_ID,
         InstanceType=AMI_INSTANCE_TYPE,
         KeyName=key_name,
@@ -68,6 +68,13 @@ def launch_instance(key_name, security_group):
             security_group
         ],
     )
+    return response
+
+
+def terminate_instance(ids):
+    ec2 = boto3.resource('ec2')
+    response = ec2.instances.filter(InstanceIds=ids).terminate()
+    return response
 
 
 def get_security_groups():
@@ -117,7 +124,8 @@ def create_security_group(group_name):
     
 def main(args):
     if args.launch_instance is True:
-        launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
+        response = launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
+        print(response)
     elif args.keypairs is True:
         keynames = get_key_pairs()
         print("-----AWS IAM Key Pairs-----")
@@ -127,6 +135,9 @@ def main(args):
         print("-----AWS Security Groups-----")
         names = get_security_group_names()
         print('\n'.join(names))
+    elif args.terminate_id is not None:
+        response = terminate_instance([args.terminate_id])
+        print(response)
 
 
 AWS_SETTINGS = load_settings()
@@ -145,5 +156,7 @@ if __name__ == "__main__":
         help='List AWS keypairs')
     parser.add_argument('--security_groups', action='store_true',
         help='List AWS security groups')
+    parser.add_argument('--terminate_id',
+        help='Specify an instance id to terminate')
     args = parser.parse_args()
     main(args)
