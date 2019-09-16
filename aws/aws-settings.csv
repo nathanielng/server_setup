@@ -1,4 +1,6 @@
 Setting,Value,Description
-AMI_IMAGE_ID,ami-048a01c78f7bae4aa,"Amazon Linux 2 AMI (HVM), SSD Volume Type"
+AMI_IMAGE_ID,"ami-048a01c78f7bae4aa","Amazon Linux 2 AMI (HVM), SSD Volume Type"
 AMI_INSTANCE_TYPE,"t2.small","default instance type to launch"
 AVAILABILITY_ZONE,"ap-southeast-1","default availability zone"
+KEY_PAIR_NAME,"ec2-ssh-keypair","default key pair"
+SECURITY_GROUP,"EC2_Security_SSH_Jupyter","default security group"
