@@ -6,9 +6,6 @@ import csv
 import os
 
 
-AWS_SETTINGS = load_settings()
-
-
 def load_settings(filename="aws-settings.csv", skip_rows=1):
     with open(filename) as f:
         table = csv.reader(f, delimiter=',')
@@ -21,32 +18,51 @@ def load_settings(filename="aws-settings.csv", skip_rows=1):
     return d
 
 
-def launch_spot_instance(keypair):
+def get_key_pairs():
+    """
+    Get EC2 Key Pair Names
+    """
+    client = boto3.client('ec2', AVAILABILITY_ZONE)
+    keypairs = client.describe_key_pairs()
+    keypairs = [ kepair for kepair in keypairs['KeyPairs']]
+    keynames = [ kepair['KeyName'] for kepair in keypairs]
+    return keynames
+
+
+def launch_instance(keypair):
     """
     Launches a spot instance
     """
-    AMI_IMAGE_ID = AWS_SETTINGS['AMI_IMAGE_ID']
-    AMI_INSTANCE_TYPE = AWS_SETTINGS['AMI_INSTANCE_TYPE']
     ec2 = boto3.resource('ec2')
     ec2.create_instances(
         ImageId=AMI_IMAGE_ID,
         InstanceType=AMI_INSTANCE_TYPE,
         KeyName=keypair,
-        InstanceMarketOptions={
-            'MarketType': 'spot',
-            'SpotInstanceType': 'one-time',
-            'InstanceInterruptionBehavior': 'stop'}
         MinCount=1, MaxCount=1)
 
     
 def main(args):
     if args.launch_spot_instance is True:
-        launch_spot_instance(args.keypair)
+        keynames = get_key_pairs()
+        launch_spot_instance(keynames[0])
+    elif args.keypairs is True:
+        keynames = get_key_pairs()
+        print("-----AWS IAM Key Pairs-----")
+        for keyname in keynames:
+            print(keyname)
+
+
+AWS_SETTINGS = load_settings()
+AMI_IMAGE_ID = AWS_SETTINGS['AMI_IMAGE_ID']
+AMI_INSTANCE_TYPE = AWS_SETTINGS['AMI_INSTANCE_TYPE']
+AVAILABILITY_ZONE = AWS_SETTINGS['AVAILABILITY_ZONE']
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--launch_spot_instance', help='Launch an AWS Spot Instance')
-    parser.add_argument('--keypair', help='AWS Keypair')
+    parser.add_argument('--launch_spot_instance', action='store_true',
+        help='Launch an AWS Spot Instance')
+    parser.add_argument('--keypairs', action='store_true',
+        help='List AWS Keypairs')
     args = parser.parse_args()
     main(args)
