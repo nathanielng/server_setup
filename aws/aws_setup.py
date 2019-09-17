@@ -5,6 +5,8 @@ import boto3
 import csv
 import os
 import re
+import sys
+import time
 
 
 def load_settings(filename="aws-settings.csv", skip_rows=1):
@@ -71,9 +73,21 @@ def launch_instance(key_name, security_group):
         ],
     )
     instance = response['Instances'][0]
-    print("Launched EC2 Instance with:")
-    print(f"ID={instance['ImageId']}")
+    instance_id = instance['InstanceId']
+    print(f"Launched EC2 Instance with: ID={instance_id}")
+    print("Terminate this instance with the script: terminate_ec2.sh")
+    with open("terminate_ec2.sh", "w") as f:
+        f.write(f"python {sys.argv[0]} --terminate_id {instance_id}")
 
+    print("Waiting for public dns", end='')
+    while True:
+        instance_info = describe_instances([instance_id])
+        public_dns = instance_info['Reservations'][0]['Instances'][0]['PublicDnsName']
+        if public_dns != '':
+            print(f"\nPublic DNS: {public_dns}")
+            break
+        print('.', end='')
+        time.sleep(1)
     return response
 
 
