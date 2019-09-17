@@ -157,15 +157,13 @@ def main(args):
     elif args.instances is True:
         response = describe_instances()
         reservations = response['Reservations']
-        print('InstanceId | InstanceType | KeyName | AvailabilityZone | PublicDnsName ')
-        print('===========|==============|=========|==================|===============')
+        print(' InstanceId         | Type     | State      | KeyName         | PublicDnsName ')
+        print('====================|==========|============|=================|===============')
         for i, reservation in enumerate(reservations):
             instance = reservation['Instances'][0]
-            print('{InstanceId} | {InstanceType} | {KeyName}'.format(**instance), end='')
-            if 'AvailabilityZone' in instance.keys():
-                print(' | {AvailabilityZone}'.format(**instance), end='')
-            else:
-                print(' | - ', end='')
+            state = instance['State']['Name']
+            print(f"{instance['InstanceId']} | {instance['InstanceType']} | {state}", end='')
+            print(' | {KeyName}'.format(**instance), end='')
             if 'PublicDnsName' in instance.keys():
                 print(' | {PublicDnsName}'.format(**instance))
             else:
