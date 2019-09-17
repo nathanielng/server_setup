@@ -40,6 +40,7 @@ def create_key_pair(key_name):
     )
     with open(key_name, 'w') as f:
         f.write(response['KeyMaterial'])
+    os.chmod(key_name, 0o600)
     return response
 
 
@@ -58,16 +59,21 @@ def launch_instance(key_name, security_group):
         group_id = create_security_group(security_group)
 
     # Create EC2 Instance
-    ec2 = boto3.resource('ec2')
-    response = ec2.create_instances(
+    ec2 = boto3.client('ec2', AVAILABILITY_ZONE)
+    response = ec2.run_instances(
         ImageId=AMI_IMAGE_ID,
         InstanceType=AMI_INSTANCE_TYPE,
         KeyName=key_name,
-        MinCount=1, MaxCount=1,
+        MinCount=1,
+        MaxCount=1,
         SecurityGroups=[
             security_group
         ],
     )
+    instance = response['Instances'][0]
+    print("Launched EC2 Instance with:")
+    print(f"ID={instance['ImageId']}")
+
     return response
 
 
@@ -106,7 +112,6 @@ def create_security_group(group_name):
         GroupName=group_name,
         Description=re.sub("_", " ", group_name)
     )
-    print(response)
     group_id = response['GroupId']
     response = client.authorize_security_group_ingress(
         GroupId=group_id,
@@ -135,7 +140,6 @@ def create_security_group(group_name):
 def main(args):
     if args.launch_instance is True:
         response = launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
-        print(response)
     elif args.instances is True:
         response = describe_instances()
         reservations = response['Reservations']
