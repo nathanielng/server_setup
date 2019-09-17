@@ -87,6 +87,7 @@ def launch_instance(key_name, security_group):
             print(f"\nPublic DNS: {public_dns}")
             break
         print('.', end='')
+        sys.stdout.flush()
         time.sleep(1)
     return response
 
