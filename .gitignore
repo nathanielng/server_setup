@@ -1,5 +1,7 @@
 id_ed25519*
 *-keypair
+terminate_ec2.sh
+temp*
 
 scripts/gotop
 scripts/terraform
