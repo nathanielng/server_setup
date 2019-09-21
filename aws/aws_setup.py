@@ -70,9 +70,12 @@ def launch_instance(key_name, security_group):
     key_names = get_key_pairs()
     if key_name not in key_names:
         create_key_pair(key_name, True)
+        print()
     elif not os.path.isfile(key_name):
         delete_key_pair(key_name, True)
+        print()
         create_key_pair(key_name, True)
+        print()
 
     # Create Security Group if it does not already exist
     names = get_security_group_names()
@@ -113,7 +116,7 @@ def launch_instance(key_name, security_group):
     with open('ssh_to_ec2.sh', 'w') as f:
         f.write(ssh_command)
 
-    print('Access the EC2 instance with:')
+    print('Access the EC2 instance with ssh_to_ec2.sh, or run following command directly:')
     print(ssh_command)
     return response
 
@@ -134,6 +137,7 @@ def terminate_instance(ids):
     return response
 
 
+# ----- Security Group Management
 def get_security_groups():
     client = boto3.client('ec2', AVAILABILITY_ZONE)
     response = client.describe_security_groups()
@@ -178,6 +182,7 @@ def create_security_group(group_name):
     return group_id
 
     
+# ----- Main Program -----
 def main(args):
     if args.launch_instance is True:
         response = launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
@@ -231,3 +236,4 @@ if __name__ == "__main__":
         help='Specify an instance id to terminate')
     args = parser.parse_args()
     main(args)
+
