@@ -21,6 +21,7 @@ def load_settings(filename="aws-settings.csv", skip_rows=1):
     return d
 
 
+# ----- Key Pair Management -----
 def get_key_pairs():
     """
     Get EC2 Key Pair Names
@@ -32,7 +33,7 @@ def get_key_pairs():
     return keynames
 
 
-def create_key_pair(key_name):
+def create_key_pair(key_name, verbose=False):
     """
     Creates a Key Pair
     """
@@ -43,9 +44,24 @@ def create_key_pair(key_name):
     with open(key_name, 'w') as f:
         f.write(response['KeyMaterial'])
     os.chmod(key_name, 0o600)
+    if verbose is True:
+        print(f'Created key pair: {key_name}')
+        print(f'response = {response}')
     return response
 
 
+def delete_key_pair(key_name, verbose=False):
+    client = boto3.client('ec2', AVAILABILITY_ZONE)
+    response = client.delete_key_pair(
+        KeyName=key_name
+    )
+    if verbose is True:
+        print(f'Deleted key pair: {key_name}')
+        print(f'response = {response}')
+    return response
+
+
+# ----- Launch Instance -----
 def launch_instance(key_name, security_group):
     """
     Launches an EC2 instance
@@ -53,7 +69,10 @@ def launch_instance(key_name, security_group):
     # Create Key Pair if it does not already exist
     key_names = get_key_pairs()
     if key_name not in key_names:
-        response = create_key_pair(key_name)
+        create_key_pair(key_name, True)
+    elif not os.path.isfile(key_name):
+        delete_key_pair(key_name, True)
+        create_key_pair(key_name, True)
 
     # Create Security Group if it does not already exist
     names = get_security_group_names()
@@ -89,6 +108,13 @@ def launch_instance(key_name, security_group):
         print('.', end='')
         sys.stdout.flush()
         time.sleep(1)
+
+    ssh_command = f'ssh -i {key_name} ec2-user@{public_dns}'
+    with open('ssh_to_ec2.sh', 'w') as f:
+        f.write(ssh_command)
+
+    print('Access the EC2 instance with:')
+    print(ssh_command)
     return response
 
 
