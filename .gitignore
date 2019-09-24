@@ -1,6 +1,14 @@
+id_ed25519*
+*-keypair
+.vscode
+
 scripts/gotop
 scripts/terraform
 docker/volumes
 docker/gitea/gitea
 terraform.tfstate*
 .terraform
+
+ssh_to_ec2.sh
+terminate_ec2.sh
+temp*
