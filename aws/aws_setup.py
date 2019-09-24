@@ -87,6 +87,7 @@ def launch_instance(key_name, security_group):
         KeyName=key_name,
         MinCount=1,
         MaxCount=1,
+        InstanceInitiatedShutdownBehavior='terminate',
         SecurityGroups=[
             security_group
         ],
@@ -126,6 +127,12 @@ def describe_instances(instance_ids=None):
         return client.describe_instances(
             InstanceIds=instance_ids
         )
+
+
+def stop_instance(ids):
+    ec2 = boto3.resource('ec2')
+    response = ec2.instances.filter(InstanceIds=ids).stop()
+    return response
 
 
 def terminate_instance(ids):
@@ -177,7 +184,19 @@ def create_security_group(group_name):
     )
     return group_id
 
-    
+
+# ----- S3 Buckets -----
+def get_buckets():
+    s3 = boto3.resource('s3')
+    return [ bucket in s3.buckets.all() ]
+
+
+def list_buckets():
+    for bucket in get_buckets():
+        print(bucket.name)
+
+
+# ----- Main Program -----
 def main(args):
     if args.launch_instance is True:
         response = launch_instance(KEY_PAIR_NAME, SECURITY_GROUP)
