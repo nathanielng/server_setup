@@ -1,6 +1,12 @@
 #!/bin/bash
 
 FILE="$HOME/.ssh/id_ed25519"
+echo "This will set up a new key $FILE"
+if [ -e "$FILE" ]; then
+    echo "Error: the key file already exists"
+    exit 1
+fi
+
 ssh-keygen -o -a 100 -t ed25519 -f $FILE -C "$USER@$HOSTNAME"
 
 PUBLIC_IP_ADDR=`curl http://ifconfig.me/ip`
