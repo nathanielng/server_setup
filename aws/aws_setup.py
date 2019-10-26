@@ -252,6 +252,9 @@ if __name__ == "__main__":
         help='List AWS security groups')
     parser.add_argument('--terminate_id',
         help='Specify an instance id to terminate')
+    parser.add_argument('--git_user')
+    parser.add_argument('--git_email')
+    parser.add_argument('--git_editor')
     args = parser.parse_args()
     main(args)
 
