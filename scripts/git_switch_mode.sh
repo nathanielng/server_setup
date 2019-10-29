@@ -1,5 +1,5 @@
 #!/bin/bash
-
+  
 if [ "$1" = "" ]; then
     echo "Usage: $0 [https2git|git2https]"
     exit 1
@@ -32,4 +32,3 @@ else
     echo "git remote set-url origin ${new_url}"
 
 fi
-
