@@ -1,8 +1,11 @@
 #!/bin/bash
-curl -O https://repo.continuum.io/miniconda/Miniconda3-4.5.12-Linux-x86_64.sh
-md5sum Miniconda3-4.5.12-Linux-x86_64.sh | grep "866ae9dff53ad0874e1d1a60b1ad1ef8"
+
+# Repo Page: https://repo.anaconda.com/miniconda/
+
+curl -O https://repo.continuum.io/miniconda/Miniconda3-4.7.10-Linux-x86_64.sh
+md5sum Miniconda3-4.7.10-Linux-x86_64.sh | grep "1c945f2b3335c7b2b15130b1b2dc5cf4"
 if [ "$?" -eq 0 ]; then
-    bash Miniconda3-4.5.12-Linux-x86_64.sh
+    bash Miniconda3-4.7.10-Linux-x86_64.sh
 else
     echo "Failed to download Miniconda"
     exit 1
