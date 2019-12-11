@@ -9,6 +9,7 @@ import sys
 import time
 
 
+# ----- Setup -----
 def load_settings(filename="aws-settings.csv", skip_rows=1):
     with open(filename) as f:
         table = csv.reader(f, delimiter=',')
@@ -200,6 +201,14 @@ def list_buckets():
         print(bucket.name)
 
 
+def get_url(bucket, obj, t=86400):
+    s3 = boto3.client('s3')
+    p={'Bucket': bucket, 'Key': obj}
+    r = s3.generate_presigned_url(
+        'get_object', Params=p, ExpiresIn=t)
+    return r
+
+
 # ----- Main Program -----
 def main(args):
     if args.launch_instance is True:
@@ -230,6 +239,9 @@ def main(args):
     elif args.terminate_id is not None:
         response = terminate_instance([args.terminate_id])
         print(response)
+    elif args.bucket != '' and args.object != '':
+        response = get_url(args.bucket, args.object)
+        print(response)
 
 
 AWS_SETTINGS = load_settings()
@@ -255,6 +267,8 @@ if __name__ == "__main__":
     parser.add_argument('--git_user')
     parser.add_argument('--git_email')
     parser.add_argument('--git_editor')
+    parser.add_argument('--bucket', default='')
+    parser.add_argument('--object', default='')
     args = parser.parse_args()
     main(args)
 
