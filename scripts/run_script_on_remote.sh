@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Purpose:  Copy a script to a remote server and execute it
+# Requires: ssh key access to the remote server
+#
 
 if [ "$2" = "" ]; then
     echo "Usage: $0 [script_name] [server_name]"
