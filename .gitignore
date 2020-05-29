@@ -2,6 +2,9 @@ id_ed25519*
 *-keypair
 .vscode
 
+copy_to_*.sh
+git_setup.sh
+
 scripts/gotop
 scripts/terraform
 docker/volumes
