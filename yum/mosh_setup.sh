@@ -8,8 +8,8 @@ echo ">>>>> 3 >>>>> ./autogen.sh"
 cd mosh/
 ./autogen.sh
 
-echo ">>>>> 4 >>>>> ./configure"
-./configure
+echo ">>>>> 4 >>>>> ./configure --prefix=/usr/local"
+./configure --prefix=/usr/local
 
 echo ">>>>> 5 >>>>> ./make"
 make
