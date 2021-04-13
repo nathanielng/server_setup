@@ -1,11 +1,13 @@
-#!/bin/bash
+#!/bin/bash -xe
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Setup ~/.bash_profile
 
 cat >> /home/ec2-user/.bash_profile <<EOF
 export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 export SUDO_PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-export LC_ALL="en_US.UTF-8"
+export LANG="en_US.utf-8"
+export LC_ALL="en_US.utf-8"
 
 HISTSIZE=20000
 HISTFILESIZE=20000
@@ -13,7 +15,8 @@ TERM='xterm-256color'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 
-cat /etc/system-release 
+cat /etc/system-release
+date
 EOF
 
 # Install Cloudwatch (CW) Agent
@@ -38,5 +41,7 @@ systemctl is-enabled httpd
 
 usermod -a -G apache ec2-user
 chown -R ec2-user:apache /var/www
-chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
-find /var/www -type f -exec sudo chmod 0664 {} \;
+chmod 2775 /var/www
+find /var/www -type d -exec chmod 2775 {} \;
+find /var/www -type f -exec chmod 0664 {} \;
+echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
