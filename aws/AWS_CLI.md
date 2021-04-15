@@ -6,6 +6,7 @@ Check IP address:
 
 ```bash
 MY_IP_ADDR=`curl ifconfig.me`
+MY_IP_ADDR=`curl v4.ifconfig.co`
 MY_IP_ADDR=`curl https://checkip.amazonaws.com`
 CIDR="{$MY_IP_ADDR}/32"
 ```
