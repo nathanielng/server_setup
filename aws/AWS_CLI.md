@@ -19,12 +19,22 @@ aws ec2 describe-instances help
 aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservances[].InstanceId"
 ```
 
+### 1.2 VPCs
+
+Retrieve information on VPCs:
+
+```bash
+aws ec2 describe-vpcs
+aws ec2 describe-vpcs --query "Vpcs[*].[VpcId,CidrBlockAssociationSet[*].CidrBlock,Tags]"
+```
+
 ### 1.2 Security Groups
 
 Retrieve information on security groups:
 
 ```bash
 aws ec2 describe-security-groups help
+aws ec2 describe-security-groups --query "SecurityGroups[*].[Description,GroupName,GroupId]"
 aws ec2 describe-security-groups --group-name $GROUP_NAME
 aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=22 --query "SecurityGroups[*].[GroupName]"
 ```
