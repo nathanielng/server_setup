@@ -28,7 +28,7 @@ aws ec2 describe-vpcs
 aws ec2 describe-vpcs --query "Vpcs[*].[VpcId,CidrBlockAssociationSet[*].CidrBlock,Tags]"
 ```
 
-### 1.2 Security Groups
+### 1.3 Security Groups
 
 Retrieve information on security groups:
 
@@ -55,3 +55,12 @@ aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=2
 aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
+
+## 2. Pricing
+
+```bash
+aws pricing describe-services --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
+aws pricing get-attribute-values --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2 --attribute-name instanceType
+aws pricing get-products --max-results 1 --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
+```
+
