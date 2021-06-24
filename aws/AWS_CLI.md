@@ -11,6 +11,12 @@ MY_IP_ADDR=`curl https://checkip.amazonaws.com`
 CIDR="{$MY_IP_ADDR}/32"
 ```
 
+Retrieve Account ID:
+
+```bash
+ACCOUNT_ID=`aws sts get-caller-identity | jq -r '.Account'`
+```
+
 ### 1.1 Instances
 
 ```bash
