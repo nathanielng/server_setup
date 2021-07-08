@@ -140,5 +140,21 @@ echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 # test -f "/sbin/mount.efs" && printf "\n[client-info]\nsource=liw\n" >> /etc/amazon/efs/efs-utils.conf
 # retryCnt=5; waitTime=20; while true; do mount -a -t efs,nfs4 defaults; if [ "$?" -eq 0 ] || [ $retryCnt -lt 1 ]; then echo File system mounted successfully; break; fi; echo File system not available, retrying to mount.; ((retryCnt--)); sleep $waitTime; done;
 
+# (6) Enable EPEL
+# amazon-linux-extras install -y epel
+
+# (7) Install AWS CLI v2 (and remove AWS CLI v1)
+# pip3 uninstall -y awscli
+# sudo rm /usr/bin/aws
+
+# PROCESSOR=$(uname -p)
+# if [ "$PROCESSOR" == "x86_64" ]; then
+#     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# else
+#     curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+# fi
+# unzip awscliv2.zip
+# sudo ./aws/install
+
 echo "Cloud Init completed successfully on:"
 date
