@@ -21,7 +21,7 @@ CLUSTER_NAME="my-dcv-cluster"
 IFACE=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/)
 SUBNET_ID=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/${IFACE}/subnet-id)
 VPC_ID=$(curl --silent http://169.254.169.254/latest/meta-data/network/interfaces/macs/${IFACE}/vpc-id)
-AZ=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)
+AZ=$(curl --silent http://169.254.169.254/latest/meta-data/placement/availability-zone)
 REGION=${AZ::-1}
 
 # Create the cluster configuration
@@ -67,6 +67,9 @@ pcluster create ${CLUSTER_NAME} -c ${CLUSTER_NAME}.ini
 date
 echo "AWS ParallelCluster creation complete for: ${CLUSTER_NAME}"
 echo "To connect to the cluster, type:"
+echo "pcluster dcv connect ${CLUSTER_NAME} -k ~/.ssh/${KEY_NAME}"
+echo
+echo "To ssh into the cluster, type:"
 echo "pcluster ssh ${CLUSTER_NAME} -i ~/.ssh/${KEY_NAME}"
 echo
 echo "To delete the cluster, type:"
