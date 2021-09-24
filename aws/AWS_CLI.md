@@ -14,7 +14,7 @@ CIDR="{$MY_IP_ADDR}/32"
 Retrieve Account ID:
 
 ```bash
-ACCOUNT_ID=`aws sts get-caller-identity | jq -r '.Account'`
+ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 ```
 
 ### 1.1 Instances
