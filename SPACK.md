@@ -20,7 +20,27 @@ git checkout develop
 ```bash
 spack arch
 spack compilers
+spack location --install-dir gcc
+```
+
+### 2.2 Compilers
+
+```bash
 spack install gcc@8.3
 spack install intel-oneapi-compilers
+time spack install nvhpc@21.2
+
+spack load mpich
+spack spec intel-mpi
+spack spec intel-mkl
 spack location --install-dir gcc
+```
+
+### 2.3 Spack Environments
+
+```bash
+spack env create myenv
+spack env activate myenv
+spack env list
+spack env deactivate
 ```
