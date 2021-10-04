@@ -7,7 +7,7 @@
 ### 1.1 Installation
 
 ```bash
-git clone https://github.com/spack/spack.git ~/spack
+git clone -c feature.manyFiles=true https://github.com/spack/spack.git ~/spack
 cd ~/spack
 git checkout develop
 . spack/share/spack/setup-env.sh
@@ -26,7 +26,7 @@ spack location --install-dir gcc
 ### 2.2 Compilers
 
 ```bash
-spack install gcc@8.3
+spack install gcc@11.2
 spack install intel-oneapi-compilers
 time spack install nvhpc@21.2
 
