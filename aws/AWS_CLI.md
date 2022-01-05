@@ -65,7 +65,10 @@ aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp
 ## 2. Cloudformation
 
 ```bash
+aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters file://path/parameters.json
 aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters ParameterKey=Key1,ParameterValue=Value1 ParameterKey=Key2,ParameterValue=Value2
+aws cloudformation create-stack --stack-name mystackname --template-url "https://hostname.com/mycfnstack.json"
+aws cloudformation deploy --template-file template.yaml --stack-name mystackname
 ```
 
 ## 3. Pricing
