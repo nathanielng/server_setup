@@ -62,7 +62,13 @@ aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
 
-## 2. Pricing
+## 2. Cloudformation
+
+```bash
+aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters ParameterKey=Key1,ParameterValue=Value1 ParameterKey=Key2,ParameterValue=Value2
+```
+
+## 3. Pricing
 
 ```bash
 aws pricing describe-services --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
