@@ -11,10 +11,11 @@ MY_IP_ADDR=`curl https://checkip.amazonaws.com`
 CIDR="{$MY_IP_ADDR}/32"
 ```
 
-Retrieve Account ID:
+Retrieve Account ID and region:
 
 ```bash
 ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+REGION=$(aws configure get region)
 ```
 
 ### 1.1 Instances
