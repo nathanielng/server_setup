@@ -63,6 +63,17 @@ aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
 
+### 1.4 Key Pairs
+
+```bash
+KEY_NAME="keypair-aws-${REGION}"
+KEY_FILE="${HOME}/.ssh/${KEY_NAME}"
+aws ec2 describe-key-pairs --key-name "${KEY_NAME}" --region ${REGION} > /dev/null 2>&1
+if [ "$?" -ne 0 ]; then
+    aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION}
+fi
+```
+
 ## 2. Cloudformation
 
 ```bash
