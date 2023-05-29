@@ -74,6 +74,51 @@ if [ "$?" -ne 0 ]; then
 fi
 ```
 
+### 1.5 Capacity Reservations
+
+```bash
+COUNT=0
+for i in {1..1000}
+do
+  echo "Attempting to create a new EC2 reservation now:"
+  aws ec2 create-capacity-reservation \
+    --availability-zone ap-southeast-1a \
+    --instance-type t3.nano \
+    --instance-platform Linux/UNIX \
+    --instance-count 1 \
+    --end-date-type limited \
+    --end-date 2024-12-31T23:59:59Z
+  if [ "$?" -eq 0 ]; then
+    COUNT=$((COUNT + 1))
+    echo "Capacity reservation was successful"
+    echo "Total reservations created so far: $COUNT"
+    # echo "Attempting to launching EC2 instance"
+    # aws ec2 run-instances \
+    #   --image-id "<my-ami-id>" \
+    #   --instance-type "t3.nano" \
+    #   --key-name "<my-key-name>" \
+    #   --count 1 \
+    #   --instance-initiated-shutdown-behavior terminate \
+    #   --region ap-southeast-1 \
+    #   --subnet-id "subnet-12345678" \
+    #   --security-group-ids "sg-01234567890123456"
+
+    if [ "$COUNT" -ge 9 ]; then
+      echo "Successfully reached ${COUNT} reservations. Script will terminate."
+      break
+    fi
+  fi
+ 
+  echo "Creating new EC2 capacity reservation in 15 mins..."
+  sleep 300
+  echo "Creating new EC2 capacity reservation in 10 mins..."
+  sleep 300
+  echo "Creating new EC2 capacity reservation in  5 mins..."
+  sleep 300
+done
+```
+
+
 ## 2. Cloudformation
 
 ```bash
