@@ -3,13 +3,14 @@
 # Repo Page: https://repo.anaconda.com/miniconda/
 # Installation Guide: https://docs.conda.io/projects/conda/en/latest/user-guide/install/
 
-curl -o miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_64.sh
+curl -o miniconda3.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_23.3.1-0-Linux-x86_64.sh
 if [ ! -e "miniconda3.sh" ]; then
     echo "Failed to download Miniconda"
     exit 1
 fi
 
-md5sum miniconda3.sh | grep "87e77f097f6ebb5127c77662dfc3165e"
+# Check SHA256
+sha256sum miniconda3.sh | grep "1564571a6a06a9999a75a6c65d63cb82911fc647e96ba5b729f904bf00c177d3"
 if [ "$?" -eq 0 ]; then
     bash miniconda3.sh
 else
