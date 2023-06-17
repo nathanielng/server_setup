@@ -99,8 +99,8 @@ def launch_instance(key_name, security_group):
     instance = response['Instances'][0]
     instance_id = instance['InstanceId']
     print(f"Launched EC2 Instance with: ID={instance_id}")
-    print("Terminate this instance with the script: terminate_ec2.sh")
-    with open("terminate_ec2.sh", "w") as f:
+    print(f"Terminate this instance with the script: terminate_ec2_{instance_id[-4:]}.sh")
+    with open(f"terminate_ec2_{instance_id[-4:]}.sh", "w") as f:
         f.write(f"python {sys.argv[0]} --terminate_id {instance_id}")
 
     print("Waiting for public dns", end='')

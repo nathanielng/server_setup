@@ -11,10 +11,11 @@ MY_IP_ADDR=`curl https://checkip.amazonaws.com`
 CIDR="{$MY_IP_ADDR}/32"
 ```
 
-Retrieve Account ID:
+Retrieve Account ID and region:
 
 ```bash
-ACCOUNT_ID=`aws sts get-caller-identity | jq -r '.Account'`
+ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+REGION=$(aws configure get region)
 ```
 
 ### 1.1 Instances
@@ -62,7 +63,72 @@ aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
 
-## 2. Pricing
+### 1.4 Key Pairs
+
+```bash
+KEY_NAME="keypair-aws-${REGION}"
+KEY_FILE="${HOME}/.ssh/${KEY_NAME}"
+aws ec2 describe-key-pairs --key-name "${KEY_NAME}" --region ${REGION} > /dev/null 2>&1
+if [ "$?" -ne 0 ]; then
+    aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION}
+fi
+```
+
+### 1.5 Capacity Reservations
+
+```bash
+COUNT=0
+for i in {1..1000}
+do
+  echo "Attempting to create a new EC2 reservation now:"
+  aws ec2 create-capacity-reservation \
+    --availability-zone ap-southeast-1a \
+    --instance-type t3.nano \
+    --instance-platform Linux/UNIX \
+    --instance-count 1 \
+    --end-date-type limited \
+    --end-date 2024-12-31T23:59:59Z
+  if [ "$?" -eq 0 ]; then
+    COUNT=$((COUNT + 1))
+    echo "Capacity reservation was successful"
+    echo "Total reservations created so far: $COUNT"
+    # echo "Attempting to launching EC2 instance"
+    # aws ec2 run-instances \
+    #   --image-id "<my-ami-id>" \
+    #   --instance-type "t3.nano" \
+    #   --key-name "<my-key-name>" \
+    #   --count 1 \
+    #   --instance-initiated-shutdown-behavior terminate \
+    #   --region ap-southeast-1 \
+    #   --subnet-id "subnet-12345678" \
+    #   --security-group-ids "sg-01234567890123456"
+
+    if [ "$COUNT" -ge 9 ]; then
+      echo "Successfully reached ${COUNT} reservations. Script will terminate."
+      break
+    fi
+  fi
+ 
+  echo "Creating new EC2 capacity reservation in 15 mins..."
+  sleep 300
+  echo "Creating new EC2 capacity reservation in 10 mins..."
+  sleep 300
+  echo "Creating new EC2 capacity reservation in  5 mins..."
+  sleep 300
+done
+```
+
+
+## 2. Cloudformation
+
+```bash
+aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters file://path/parameters.json
+aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters ParameterKey=Key1,ParameterValue=Value1 ParameterKey=Key2,ParameterValue=Value2
+aws cloudformation create-stack --stack-name mystackname --template-url "https://hostname.com/mycfnstack.json"
+aws cloudformation deploy --template-file template.yaml --stack-name mystackname
+```
+
+## 3. Pricing
 
 ```bash
 aws pricing describe-services --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
