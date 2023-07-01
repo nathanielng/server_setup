@@ -17,5 +17,9 @@ EOF
 which apt
 if [ "$?" -eq 0 ]; then
     echo "alias update='sudo apt -y update && sudo apt -y upgrade'" >> $FILE
+else
+    which yum
+    if [ "$?" -eq 0 ]; then
+        echo "alias update='sudo yum -y update'" >> $FILE
+    fi
 fi
-
