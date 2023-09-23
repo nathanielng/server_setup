@@ -26,6 +26,12 @@ aws ec2 describe-instances help
 aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservances[].InstanceId"
 ```
 
+Get the EC2 instances in a specific region & availability zone
+
+```bash
+aws ec2 describe-instance-type-offerings --location-type "availability-zone" --filters Name=location,Values=us-east-2a --region us-east-2 --query "InstanceTypeOfferings[*].[InstanceType]" --output text | sort
+```
+
 ### 1.2 VPCs
 
 Retrieve information on VPCs:
