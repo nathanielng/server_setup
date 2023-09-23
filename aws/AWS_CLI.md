@@ -32,6 +32,16 @@ Get the EC2 instances in a specific region & availability zone
 aws ec2 describe-instance-type-offerings --location-type "availability-zone" --filters Name=location,Values=us-east-2a --region us-east-2 --query "InstanceTypeOfferings[*].[InstanceType]" --output text | sort
 ```
 
+Get EC2 image ids
+
+```bash
+aws ec2 describe-images --owners self amazon --filters "Name=root-device-type,Values=ebs"
+aws ssm get-parameters-by-path --path /aws/service/ami-amazon-linux-latest --query "Parameters[].Name"
+pcluster list-official-images --os alinux2 --architecture x86_64
+pcluster list-official-images --os ubuntu2204 --architecture arm64
+```
+
+
 ### 1.2 VPCs
 
 Retrieve information on VPCs:
