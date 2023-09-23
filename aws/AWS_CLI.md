@@ -69,7 +69,9 @@ aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
 
-### 1.4 Key Pairs
+### 1.4 Keys
+
+#### 1.4.1 EC2 Key Pairs
 
 ```bash
 KEY_NAME="keypair-aws-${REGION}"
@@ -79,6 +81,31 @@ if [ "$?" -ne 0 ]; then
     aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION}
 fi
 ```
+
+#### 1.4.2 KMS Keys
+
+Look up the creation of a specific KMS key in Cloudtrail
+
+```bash
+REGION="ap-southeast-1"
+aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateKey
+aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateStack
+aws cloudformation list-stacks --region $REGION
+aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].StackName"
+aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].[StackName,StackId]" --output table
+aws kms list-keys --region $REGION --output table
+aws kms list-keys --region $REGION --query "Keys[*].KeyId"
+aws kms list-keys --region $REGION --query "Keys[*].KeyId" --output text | xargs -n 1 echo
+```
+
+Select the first KMS key and get its creation date
+
+```bash
+KMS_KEY0=$(aws kms list-keys --region $REGION --query "Keys[0].KeyId" --output text)
+aws kms describe-key --region $REGION --key-id $KMS_KEY0
+aws kms describe-key --region $REGION --key-id $KMS_KEY0 --query "KeyMetadata.CreationDate"
+```
+
 
 ### 1.5 Capacity Reservations
 
