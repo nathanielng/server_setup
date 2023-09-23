@@ -169,3 +169,18 @@ aws pricing get-attribute-values --endpoint https://api.pricing.us-east-1.amazon
 aws pricing get-products --max-results 1 --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
 ```
 
+## 4. SageMaker
+
+Check for active SageMaker resources
+
+```bash
+REGION="ap-southeast-1"
+aws sagemaker --region $REGION list-endpoints --output text | xargs -n 1 echo
+aws sagemaker --region $REGION list-training-jobs --status-equals InProgress --max-results 50
+aws sagemaker --region $REGION list-processing-jobs --status-equals InProgress
+aws sagemaker --region $REGION list-notebook-instances --status-equals InService
+aws sagemaker --region $REGION list-transform-jobs --status-equals InProgress
+aws sagemaker --region $REGION list-hyper-parameter-tuning-jobs --status-equals InProgress
+aws sagemaker --region $REGION list-data-quality-job-definitions
+aws sagemaker --region $REGION list-compilation-jobs
+```
