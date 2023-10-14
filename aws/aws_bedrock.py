@@ -37,50 +37,38 @@ def list_models():
 
 
 # ----- Amazon Titan -----
-def invoke_titan_tg1(prompt):
-    bedrock_runtime = boto3.client(
-        service_name = 'bedrock-runtime',
-        region_name = 'us-west-2',
-        endpoint_url = 'https://prod.us-west-2.frontend.bedrock.aws.dev'
-    )
-
-    body = json.dumps({
-        "inputText": prompt
-    })
-
-    response = bedrock_runtime.invoke_model(
-        body=body,
-        modelId='amazon.titan-tg1-large',
-        accept='application/json',
-        contentType='application/json'
-        )
-    response_body = json.loads(response.get('body').read())
-    return response_body.get('results')[0].get('outputText').strip()
-
-
-def invoke_titan_text_express(prompt, modelId='amazon.titan-tg1-large'):
-    body = json.dumps({
-        "inputText": prompt
-        })
+def invoke_titan_text_express(prompt, **kwargs):
+    body = {
+        "inputText": prompt,
+        "textGenerationConfig": {
+            "maxTokenCount": 8192,
+            "stopSequences": [],
+            "temperature":0,
+            "topP":1
+         }
+    }
+    for parameter in ['maxTokenCount', 'stopSequences', 'temperature', 'topP']:
+        if parameter in kwargs:
+            body['textGenerationConfig'][parameter] = kwargs[parameter]
 
     try:
         response = bedrock_runtime.invoke_model(
-            body=body,
-            modelId=modelId,
-            accept='application/json',
+            body=json.dumps(body),
+            modelId='amazon.titan-text-express-v1',
+            accept='*/*',
             contentType='application/json'
-            )
+        )
         response_body = json.loads(response.get('body').read())
         return response_body.get('results')[0].get('outputText')
     except Exception as e:
-        # print(e)
+        print(e)
         return e
 
 
 
 # ----- Anthropic Claude -----
-def invoke_claude_instant(prompt):
-    body = json.dumps({
+def invoke_claude_instant(prompt, **kwargs):
+    body = {
         "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
         "max_tokens_to_sample": 300,
         "temperature": 0.5,
@@ -90,20 +78,23 @@ def invoke_claude_instant(prompt):
         "\\n\\nHuman:"
         ],
         "anthropic_version": "bedrock-2023-05-31"
-    })
+    }
+    for parameter in ['max_tokens_to_sample', 'temperature', 'top_k', 'top_p']:
+        if parameter in kwargs:
+            body[parameter] = kwargs[parameter]
 
     response = bedrock_runtime.invoke_model(
         modelId = "anthropic.claude-instant-v1",
         contentType = "application/json",
         accept = "*/*",
-        body = body
+        body = json.dumps(body)
     )
     response_body = json.loads(response.get('body').read())
     return response_body['completion']
 
 
-def invoke_claude_v1(prompt):
-    body = json.dumps({
+def invoke_claude_v1(prompt, **kwargs):
+    body = {
         "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
         "max_tokens_to_sample": 300,
         "temperature": 0.5,
@@ -113,20 +104,23 @@ def invoke_claude_v1(prompt):
             "\\n\\nHuman:"
         ],
         "anthropic_version": "bedrock-2023-05-31"
-    })
+    }
+    for parameter in ['max_tokens_to_sample', 'temperature', 'top_k', 'top_p']:
+        if parameter in kwargs:
+            body[parameter] = kwargs[parameter]
 
     response = bedrock_runtime.invoke_model(
         modelId = "anthropic.claude-v1",
         contentType = "application/json",
         accept = "*/*",
-        body = body
+        body = json.dumps(body)
     )
     response_body = json.loads(response.get('body').read())
     return response_body['completion']
 
 
-def invoke_claude_v2(prompt):
-    body = json.dumps({
+def invoke_claude_v2(prompt, **kwargs):
+    body = {
         "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
         "max_tokens_to_sample": 300,
         "temperature": 0.5,
@@ -136,13 +130,16 @@ def invoke_claude_v2(prompt):
         "\\n\\nHuman:"
         ],
         "anthropic_version": "bedrock-2023-05-31"
-    })
+    }
+    for parameter in ['max_tokens_to_sample', 'temperature', 'top_k', 'top_p']:
+        if parameter in kwargs:
+            body[parameter] = kwargs[parameter]
 
     response = bedrock_runtime.invoke_model(
         modelId = "anthropic.claude-v2",
         contentType = "application/json",
         accept = "*/*",
-        body = body
+        body = json.dumps(body)
     )
     response_body = json.loads(response.get('body').read())
     return response_body['completion']
@@ -152,10 +149,6 @@ def invoke_claude_v2(prompt):
 if __name__ == '__main__':
     list_models()
     prompt = 'What is science?'
-
-    print('----- Titan TG1 -----')
-    answer = invoke_titan_tg1(prompt)
-    print(answer)
 
     print('----- Titan Text Express -----')
     answer = invoke_titan_text_express(prompt)
