@@ -57,6 +57,7 @@ sudo installer -pkg AWSCLIV2.pkg -target /
 ```bash
 sudo apt install unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"  # for ARM
 unzip awscliv2.zip
 sudo ./aws/install --update
 ```
@@ -64,6 +65,22 @@ sudo ./aws/install --update
 
 
 ### 1.3 Install Python Environment + Boto3
+
+Install Python Environment (Amazon Linux)
+
+```bash
+amazon-linux-extras | grep python  # Latest version should be 3.8 or higher
+sudo amazon-linux-extras install python3.8
+
+curl -LO https://bootstrap.pypa.io/get-pip.py
+python3.8 get-pip.py
+python3.8 -m pip install virtualenv
+python3.8 -m virtualenv ~/.venv -p python3.8
+source ~/.venv/bin/activate
+pip install boto3 -U
+```
+
+Install Python Environment (General)
 
 ```bash
 curl -LO https://bootstrap.pypa.io/get-pip.py
@@ -77,7 +94,7 @@ pip install boto3 -U
 Test the Python environment with the following. Boto3 version should be ~1.28.61 or higher.
 
 ```bash
-python3 -c "import boto3; print(boto3.__version__)"
+python -c "import boto3; print(boto3.__version__)"
 ```
 
 Run the following Bedrock Hello World Script
