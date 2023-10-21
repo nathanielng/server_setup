@@ -1,5 +1,7 @@
 # Amazon Bedrock
 
+- Bedrock [Base model IDs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html)
+
 ## 1. Bedrock Setup
 
 ### 1.1 Bedrock Access
@@ -29,6 +31,8 @@ Browse to the Bedrock Model Access Page in [us-east-1](https://us-east-1.console
 or [us-west-2](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess).
 Click the **Edit** button, and check all the models that you wish to enable.
 Then click the **Save Changes** button.
+
+**Ref**: Bedrock [Model access documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html)
 
 
 
@@ -175,6 +179,8 @@ print(bedrock.list_foundation_models())
 
 
 ### 2.3. Anthropic Claude
+
+Anthropic [Human: and Assistant: formatting guide](https://docs.anthropic.com/claude/docs/human-and-assistant-formatting)
 
 #### 2.3.1 Claude v1.3
 
