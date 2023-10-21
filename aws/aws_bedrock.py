@@ -146,6 +146,42 @@ def invoke_claude_v2(prompt, **kwargs):
 
 
 
+# ----- Stable Diffusion -----
+def invoke_stable_diffusion_xl(prompt, **kwargs):
+    text_prompts = [{"text": prompt, "weight": 1.0}]
+    if 'negative_prompts' in kwargs:
+        negative_prompts = kwargs['negative_prompts'].split(',')
+        text_prompts = text_prompts + [{"text": negprompt, "weight": -1.0} for negprompt in negative_prompts]
+
+    body = {
+        "text_prompts": text_prompts,
+        "cfg_scale": 10,
+        "seed": 0,
+        "steps": 50
+    }
+
+    for parameter in ['cfg_scale', 'seed', 'steps', 'style_preset']:
+        if parameter in kwargs:
+            body[parameter] = kwargs[parameter]
+
+    response = bedrock_runtime.invoke_model(
+        modelId = "stability.stable-diffusion-xl-v0",
+        contentType = "application/json",
+        accept = "*/*",
+        body = json.dumps(body)
+    )
+    response_body = json.loads(response.get('body').read())
+    artifacts = response_body.get('artifacts')
+    base_64_img_str = artifacts[0].get('base64')
+    img = Image.open(io.BytesIO(base64.decodebytes(bytes(base_64_img_str, "utf-8"))))
+    
+    if 'img_file' in kwargs:
+        img.save(kwags['img_file'])
+    
+    return img
+
+
+
 if __name__ == '__main__':
     list_models()
     prompt = 'What is science?'
