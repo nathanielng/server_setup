@@ -16,3 +16,37 @@ as well as docker files to build docker images.
   Mostly for builds on Amazon Linux.
 - `scripts/`: this folder contains build scripts that do not involve package managers
   such as `apt`, `yum`, or `apk`.
+
+
+## 3. Quick setup for a new server
+
+### 3.1 SSH Keys
+
+```bash
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
+```
+
+### 3.2 Bash
+
+```bash
+cat >> ~/.bashrc << EOF
+export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+export SUDO_PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+HISTSIZE=20000
+HISTFILESIZE=20000
+TERM='xterm-256color'
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+EOF
+```
+
+### 3.3 Python
+
+```bash
+curl -Os https://bootstrap.pypa.io/get-pip.py
+python3 get-pip.py
+pip install virtualenv
+cd ~
+virtualenv ~/venv -p python3
+source ~/venv/bin/activate
+```
