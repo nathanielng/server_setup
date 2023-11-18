@@ -10,13 +10,15 @@ import requests
 import tiktoken
 import time
 
+from langchain.chains import RetrievalQA
 from langchain.document_loaders import DirectoryLoader, UnstructuredMarkdownLoader
 from langchain.embeddings import BedrockEmbeddings
-from langchain.llms.bedrock import Bedrock
-from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
+from langchain.llms.bedrock import Bedrock
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
 
 
 # ----- Bedrock -----
@@ -147,6 +149,32 @@ def query_rag(vector_store, query):
     If you do not know the answer, say that you do not know.
     {query}"""
     completion = invoke_claude_instant(prompt)
+    return completion
+
+
+def query_rag2(vector_store, query):
+    prompt_template = """Answer the following question, based on the context provided: <context>{context}</context>
+    If you do not know the answer, say that you do not know.
+    {question}"""
+    PROMPT = PromptTemplate(
+        template=prompt_template, input_variables=["context", "question"]
+    )
+
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=vector_store.as_retriever(
+            search_type="similarity", search_kwargs={"k": 3}
+        ),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": PROMPT}
+    )
+    response = qa({"query": query})
+    completion = response['result']
+    source_documents = response['source_documents']
+    for document in source_documents:
+        print(f"----- {document.metadata['source']} -----")
+        print(re.sub('\n', ' ', document.page_content))
     return completion
 
 
