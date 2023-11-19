@@ -44,7 +44,19 @@ alias grep='grep --color=auto'
 EOF
 ```
 
-#### 3.2.2 Zsh
+#### 3.2.2 Zsh + Starship
+
+Change shell to Zsh using:
+
+```bash
+chsh -s /bin/zsh
+```
+
+Install Starship as follows:
+
+```zsh
+curl -sS https://starship.rs/install.sh | sh
+```
 
 Customize `~/.zshrc` as follows:
 
@@ -54,9 +66,12 @@ export PS1="%F{green}%n@%m%f %F{red}%W%f %F{yellow}%1~%f %# "
 export SUDO_PS1="%F{green}%n@%m%f %F{red}%W%f %F{yellow}%1~%f %# "
 export HISTFILE=~/.zsh_history
 export HISTSIZE=20000
-export SAVEHIST=$HISTSIZE
+export SAVEHIST=\$HISTSIZE
+eval "\$(starship init zsh)"
 EOF
 ```
+
+
 
 ### 3.3 Python
 
