@@ -162,7 +162,52 @@ done
 ```
 
 
-## 2. Cloudformation
+## 2. IAM
+
+### 2.1 Creating an IAM user with Administrator permissions and secret access keys
+
+Create a new IAM group, and give adminstrator permissions to that group
+
+```bash
+aws iam create-group --group-name MyAdminGroup
+aws iam attach-group-policy --group-name MyAdminGroup --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+Create a new IAM user, and add that user to the IAM group created in the previous step
+
+```bash
+aws iam create-user --user-name MyAdminUser
+aws iam add-user-to-group --user-name MyAdminUser --group-name MyAdminGroup
+```
+
+If you need to give the IAM admin user access to the AWS console, use:
+
+```bash
+aws iam create-login-profile --user-name MyAdminUser --password MyLoginPasswordHere123
+```
+
+If you need to generate a `SecretAccessKey` and `AccessKeyId` for use with the AWS CLI or with the AWS SDK, such as Python Boto3, use:
+
+```bash
+aws iam create-access-key --user-name MyAdminUser
+```
+
+As an example output, you will see something like the following:
+
+```json
+{
+    "AccessKey": {
+        "UserName": "MyAdminUser",
+        "AccessKeyId": "AKIAXXXXX5XXXX3S4FK",
+        "Status": "Active",
+        "SecretAccessKey": "1cXXXxxx0x9xXxXxxXXXxXXXXXxxX5XX+XxXEkvQ",
+        "CreateDate": "2023-11-09T03:27:13+00:00"
+    }
+}
+```
+
+
+## 3. Cloudformation
 
 ```bash
 aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters file://path/parameters.json
@@ -171,7 +216,7 @@ aws cloudformation create-stack --stack-name mystackname --template-url "https:/
 aws cloudformation deploy --template-file template.yaml --stack-name mystackname
 ```
 
-## 3. Pricing
+## 4. Pricing
 
 ```bash
 aws pricing describe-services --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
@@ -179,7 +224,7 @@ aws pricing get-attribute-values --endpoint https://api.pricing.us-east-1.amazon
 aws pricing get-products --max-results 1 --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
 ```
 
-## 4. SageMaker
+## 5. SageMaker
 
 Check for active SageMaker resources
 
