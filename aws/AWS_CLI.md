@@ -226,7 +226,7 @@ aws pricing get-products --max-results 1 --endpoint https://api.pricing.us-east-
 
 ## 5. SageMaker
 
-Check for active SageMaker resources
+Check for active SageMaker resources and delete them
 
 ```bash
 REGION="ap-southeast-1"
@@ -238,4 +238,18 @@ aws sagemaker --region $REGION list-transform-jobs --status-equals InProgress
 aws sagemaker --region $REGION list-hyper-parameter-tuning-jobs --status-equals InProgress
 aws sagemaker --region $REGION list-data-quality-job-definitions
 aws sagemaker --region $REGION list-compilation-jobs
+```
+
+```bash
+aws sagemaker --region $REGION list-endpoint-configs
+aws sagemaker --region $REGION describe-endpoint-config --endpoint-config-name <endpoint-config-name>
+aws sagemaker --region $REGION list-inference-components
+aws sagemaker --region $REGION list-inference-components --endpoint-name <endpoint_name>
+```
+
+```bash
+aws sagemaker --region $REGION delete-endpoint --endpoint-name <endpoint-name>
+aws sagemaker --region $REGION delete-inference-component <component_name>
+aws sagemaker --region $REGION delete-endpoint-config --endpoint-config-name <endpoint-config-name>
+aws sagemaker --region $REGION delete-model --model-name <model-name>
 ```
