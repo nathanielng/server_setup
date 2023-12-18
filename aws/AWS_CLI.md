@@ -161,6 +161,18 @@ do
 done
 ```
 
+### 1.6 [Extend a Linux file system after resizing a volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
+
+```bash
+sudo lsblk                     # check disk & partition names
+sudo growpart /dev/nvme0n1 1   # extend partition on the disk nvme0n1
+sudo lsblk                     # check that the disk (nvme0n1) and partition (nvme0n1p1) are the same size
+df -hT                         # get name, size, type, and mount points for the file system
+sudo xfs_growfs -d /           # extend the XFS file system mounted on / (XFS only)
+sudo resize2fs /dev/nvme0n1p1  # extend the ext4 file system named /dev/nvme0n1p1 (ext4 only)
+```
+
+
 
 ## 2. IAM
 
