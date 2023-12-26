@@ -2,6 +2,21 @@
 
 ## 1. EC2
 
+Setup new EC2 instance:
+
+```bash
+cat >> ~/.bashrc << EOF
+export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+export SUDO_PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+HISTSIZE=20000
+HISTFILESIZE=20000
+TERM='xterm-256color'
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+EOF
+source ~/.bashrc
+```
+
 Check IP address:
 
 ```bash
