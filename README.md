@@ -72,8 +72,23 @@ EOF
 ```
 
 
+### 3.3 Git
 
-### 3.3 Python
+```bash
+git config --global credential.helper store
+git config --global credential.helper 'cache --timeout=604800'  # 1 week
+git clone https://github.com/{git_username}/{project_name}
+```
+
+```bash
+GIT_USERNAME=$(git --no-pager show -s --format='%an' HEAD)
+GIT_USEREMAIL=$(git --no-pager show -s --format='%ae' HEAD)
+git config --local user.name "$GIT_USERNAME"
+git config --local user.email "$GIT_USEREMAIL"
+```
+
+
+### 3.4 Python
 
 ```bash
 curl -Os https://bootstrap.pypa.io/get-pip.py
