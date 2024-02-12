@@ -42,6 +42,7 @@ TERM='xterm-256color'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 EOF
+source ~/.bashrc
 ```
 
 #### 3.2.2 Zsh + Starship
