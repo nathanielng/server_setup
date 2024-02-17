@@ -56,6 +56,30 @@ pcluster list-official-images --os alinux2 --architecture x86_64
 pcluster list-official-images --os ubuntu2204 --architecture arm64
 ```
 
+Launch an EC2 Instance (20 GB EBS volume)
+
+```bash
+KEYPAIR="AWS_KEYPAIR"
+SECURITY_GROUP="sg-..."
+SUBNET="subnet-..."
+INSTANCE_TYPE="t3.large"
+AMI_ID="resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"  # Amazon Linux 2023
+
+# On-Demand Instance
+aws ec2 run-instances --image-id $AMI_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEYPAIR \
+    --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET --ebs-optimized \
+    --block-device-mapping "[ { \"DeviceName\": \"/dev/xvda\", \"Ebs\": { \"VolumeSize\": 20 } } ]" \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=t3l_20G}]'
+
+# Spot Instance
+aws ec2 run-instances --image-id $AMI_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEYPAIR \
+    --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET --ebs-optimized \
+    --block-device-mapping "[ { \"DeviceName\": \"/dev/xvda\", \"Ebs\": { \"VolumeSize\": 20 } } ]" \
+    --instance-market-options MarketType=spot,SpotOptions={SpotInstanceType=one-time} \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=t3l_spot_30G}]' 
+```
+
+
 
 ### 1.2 VPCs
 
