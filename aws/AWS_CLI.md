@@ -1,5 +1,16 @@
 # AWS CLI Examples
 
+## 0. Quick Setup
+
+Get the first key pair. For the default VPC in ap-southeast-1, get the default security group, and the default subnet corresponding to `apse1-az1`:
+
+```bash
+FIRST_KEY_PAIR=$(aws ec2 describe-key-pairs --query "KeyPairs[0].KeyName" --output text)
+DEFAULT_VPC=$(aws ec2 describe-vpcs --filter Name=is-default,Values=true --query "Vpcs[].VpcId" --region ap-southeast-1 --output text)
+DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_VPC} --filter Name=default-for-az,Values=true Name=availability-zone-id,Values=apse1-az1 --query "Subnets[].SubnetId" --output text)
+DEFAULT_SG=$(aws ec2 describe-security-groups --query "SecurityGroups[*].GroupId" --filter "Name=vpc-id,Values=${DEFAULT_VPC}" "Name=group-name,Values=default")
+```
+
 ## 1. EC2
 
 Setup new EC2 instance:
@@ -88,14 +99,24 @@ echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 
 
 
-### 1.2 VPCs
+### 1.2 VPCs and Subnets
 
 Retrieve information on VPCs:
 
 ```bash
 aws ec2 describe-vpcs
 aws ec2 describe-vpcs --query "Vpcs[*].[VpcId,CidrBlockAssociationSet[*].CidrBlock,Tags]"
+DEFAULT_VPC=$(aws ec2 describe-vpcs --filter Name=is-default,Values=true --query "Vpcs[].VpcId" --region ap-southeast-1 --output text)
 ```
+
+Default subnet of default VPC: to get the first subnet, or the subnet corresponding to an availability zone ID such as `apse1-az1`:
+
+```bash
+aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_VPC} --filter Name=default-for-az,Values=true --query "Subnets[].SubnetId" --max-items 1 --output text | head -1
+DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_VPC} --filter Name=default-for-az,Values=true Name=availability-zone-id,Values=apse1-az1 --query "Subnets[].SubnetId" --output text)
+```
+
+
 
 ### 1.3 Security Groups
 
@@ -104,8 +125,10 @@ Retrieve information on security groups:
 ```bash
 aws ec2 describe-security-groups help
 aws ec2 describe-security-groups --query "SecurityGroups[*].[Description,GroupName,GroupId]"
+aws ec2 describe-security-groups --query "SecurityGroups[*].GroupId --filter Name=group"
 aws ec2 describe-security-groups --group-name $GROUP_NAME
 aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=22 --query "SecurityGroups[*].[GroupName]"
+DEFAULT_SG=$(aws ec2 describe-security-groups --query "SecurityGroups[*].GroupId" --filter "Name=vpc-id,Values=${DEFAULT_VPC}" "Name=group-name,Values=default")
 ```
 
 Create security group:
@@ -136,6 +159,11 @@ aws ec2 describe-key-pairs --key-name "${KEY_NAME}" --region ${REGION} > /dev/nu
 if [ "$?" -ne 0 ]; then
     aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION}
 fi
+```
+
+```bash
+aws ec2 describe-key-pairs --query "KeyPairs[].KeyName"  # Get all key pairs
+FIRST_KEY_PAIR=$(aws ec2 describe-key-pairs --query "KeyPairs[0].KeyName" --output text)
 ```
 
 #### 1.4.2 KMS Keys
