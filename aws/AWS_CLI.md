@@ -1,6 +1,6 @@
 # AWS CLI Examples
 
-## 0. Quick Setup
+## 1. Quick Setup
 
 Get the first key pair. For the default VPC in ap-southeast-1, get the default security group, and the default subnet corresponding to `apse1-az1`:
 
@@ -11,7 +11,7 @@ DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_
 DEFAULT_SG=$(aws ec2 describe-security-groups --query "SecurityGroups[*].GroupId" --filter "Name=vpc-id,Values=${DEFAULT_VPC}" "Name=group-name,Values=default")
 ```
 
-## 1. EC2
+## 2. EC2
 
 Setup new EC2 instance:
 
@@ -44,7 +44,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 REGION=$(aws configure get region)
 ```
 
-### 1.1 Instances
+### 2.1 Instances
 
 ```bash
 aws ec2 describe-instances
@@ -99,7 +99,7 @@ echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 
 
 
-### 1.2 VPCs and Subnets
+### 2.2 VPCs and Subnets
 
 Retrieve information on VPCs:
 
@@ -118,7 +118,7 @@ DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_
 
 
 
-### 1.3 Security Groups
+### 2.3 Security Groups
 
 Retrieve information on security groups:
 
@@ -148,9 +148,9 @@ aws ec2 revoke-security-group-ingress --group-name $GROUP_NAME --protocol tcp --
 aws ec2 authorize-security-group-ingress --group-name $GROUP_NAME --protocol tcp --port 22 --cidr $CIDR
 ```
 
-### 1.4 Keys
+### 2.4 Keys
 
-#### 1.4.1 EC2 Key Pairs
+#### 2.4.1 EC2 Key Pairs
 
 ```bash
 KEY_NAME="keypair-aws-${REGION}"
@@ -166,32 +166,8 @@ aws ec2 describe-key-pairs --query "KeyPairs[].KeyName"  # Get all key pairs
 FIRST_KEY_PAIR=$(aws ec2 describe-key-pairs --query "KeyPairs[0].KeyName" --output text)
 ```
 
-#### 1.4.2 KMS Keys
 
-Look up the creation of a specific KMS key in Cloudtrail
-
-```bash
-REGION="ap-southeast-1"
-aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateKey
-aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateStack
-aws cloudformation list-stacks --region $REGION
-aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].StackName"
-aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].[StackName,StackId]" --output table
-aws kms list-keys --region $REGION --output table
-aws kms list-keys --region $REGION --query "Keys[*].KeyId"
-aws kms list-keys --region $REGION --query "Keys[*].KeyId" --output text | xargs -n 1 echo
-```
-
-Select the first KMS key and get its creation date
-
-```bash
-KMS_KEY0=$(aws kms list-keys --region $REGION --query "Keys[0].KeyId" --output text)
-aws kms describe-key --region $REGION --key-id $KMS_KEY0
-aws kms describe-key --region $REGION --key-id $KMS_KEY0 --query "KeyMetadata.CreationDate"
-```
-
-
-### 1.5 Capacity Reservations
+### 2.5 Capacity Reservations
 
 ```bash
 COUNT=0
@@ -235,7 +211,7 @@ do
 done
 ```
 
-### 1.6 [Extend a Linux file system after resizing a volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
+### 2.6 [Extend a Linux file system after resizing a volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
 
 ```bash
 sudo lsblk                     # check disk & partition names
@@ -247,10 +223,30 @@ sudo resize2fs /dev/nvme0n1p1  # extend the ext4 file system named /dev/nvme0n1p
 ```
 
 
+### 2.7 [Instance Metadata and IMDSv2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 
-## 2. IAM
+```bash
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/
+```
 
-### 2.1 Creating an IAM user with Administrator permissions and secret access keys
+Combined version
+
+```bash
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/
+```
+
+Get AMI ID
+
+```bash
+AMI_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/ami-id)
+echo $AMI_ID
+```
+
+
+## 3. IAM & KMS
+
+### 3.1 Creating an IAM user with Administrator permissions and secret access keys
 
 Create a new IAM group, and give adminstrator permissions to that group
 
@@ -293,7 +289,46 @@ As an example output, you will see something like the following:
 ```
 
 
-## 3. Cloudformation
+### 3.2 KMS Keys
+
+Look up the creation of a specific KMS key in Cloudtrail
+
+```bash
+REGION="ap-southeast-1"
+aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateKey
+aws cloudtrail lookup-events --region $REGION --lookup-attributes AttributeKey=EventName,AttributeValue=CreateStack
+aws cloudformation list-stacks --region $REGION
+aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].StackName"
+aws cloudformation list-stacks --region $REGION --query "StackSummaries[*].[StackName,StackId]" --output table
+aws kms list-keys --region $REGION --output table
+aws kms list-keys --region $REGION --query "Keys[*].KeyId"
+aws kms list-keys --region $REGION --query "Keys[*].KeyId" --output text | xargs -n 1 echo
+```
+
+Select the first KMS key and get its creation date
+
+```bash
+KMS_KEY0=$(aws kms list-keys --region $REGION --query "Keys[0].KeyId" --output text)
+aws kms describe-key --region $REGION --key-id $KMS_KEY0
+aws kms describe-key --region $REGION --key-id $KMS_KEY0 --query "KeyMetadata.CreationDate"
+```
+
+
+
+## 4. S3
+
+### 4.1 File Sharing
+
+```bash
+# Share file in S3 bucket using pre-signed URLs
+aws s3 presign s3://mys3bucket/folder/filename --expires-in 604800
+
+# Download file
+curl -o "filename" "https://mys3bucket.s3.{REGION}.amazonaws.com/folder/filename?..."
+```
+
+
+## 5. Cloudformation
 
 ```bash
 aws cloudformation create-stack --stack-name mystackname --template-body file://mycfnstack.json --parameters file://path/parameters.json
@@ -302,7 +337,8 @@ aws cloudformation create-stack --stack-name mystackname --template-url "https:/
 aws cloudformation deploy --template-file template.yaml --stack-name mystackname
 ```
 
-## 4. Pricing
+
+## 6. Pricing
 
 ```bash
 aws pricing describe-services --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
@@ -310,7 +346,7 @@ aws pricing get-attribute-values --endpoint https://api.pricing.us-east-1.amazon
 aws pricing get-products --max-results 1 --endpoint https://api.pricing.us-east-1.amazonaws.com --region us-east-1 --service-code AmazonEC2
 ```
 
-## 5. SageMaker
+## 7. SageMaker
 
 Check for active SageMaker resources and delete them
 
