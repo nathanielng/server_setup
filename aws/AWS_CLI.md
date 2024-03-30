@@ -70,6 +70,7 @@ pcluster list-official-images --os ubuntu2204 --architecture arm64
 Launch an EC2 Instance (specifying a name and EBS volume size)
 
 ```bash
+REGION="ap-southeast-1"
 KEYPAIR="AWS_KEYPAIR"
 SECURITY_GROUP="sg-..."
 SUBNET="subnet-..."
@@ -80,6 +81,7 @@ AMI_ID="resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-defau
 # On-Demand Instance
 aws ec2 run-instances --image-id $AMI_ID --count 1 --instance-type $INSTANCE_TYPE --key-name $KEYPAIR \
     --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET --ebs-optimized \
+    --region $REGION --instance-initiated-shutdown-behavior terminate \
     --block-device-mapping "[ { \"DeviceName\": \"/dev/xvda\", \"Ebs\": { \"VolumeSize\": 20 } } ]" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME}]"
 
