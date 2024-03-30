@@ -57,3 +57,77 @@ def lambda_handler(event, context):
         'body': json.dumps(result)
     }
 ```
+
+#### 2.1.2 Lambda Function Execution Role
+
+Replace `account-checker` with the name of the Lambda function log group
+Replace `AWS_ACCOUNT_ID_ROOT` with the AWS Account ID of the Lambda function
+Replace `AWS_ACCOUNT_ID_CHILD` with the AWS Account ID of the child account that is being monitored
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": "logs:CreateLogGroup",
+			"Resource": "arn:aws:logs:ap-southeast-1:AWS_ACCOUNT_ID_ROOT:*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogStream",
+				"logs:PutLogEvents"
+			],
+			"Resource": [
+				"arn:aws:logs:ap-southeast-1:AWS_ACCOUNT_ID_ROOT:log-group:/aws/lambda/account-checker:*"
+			]
+		},
+		{
+			"Effect": "Allow",
+			"Action": "sts:AssumeRole",
+			"Resource": "arn:aws:iam::AWS_ACCOUNT_ID_CHILD:role/OrganizationAccountAccessRole"
+		}
+	]
+}
+```
+
+#### 2.1.3 Child AWS Account
+
+Create a role `OrganizationAccountAccessRole `
+
+Permissions
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Trust relationships. Replace `ROLE_OF_LAMBDA_FUNCTION` with the role of the Lambda function and `NAME_OF_LAMBDA_FUNCTION` with the name of the Lambda function.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::856952634940:root",
+                    "arn:aws:sts::856952634940:assumed-role/ROLE_OF_LAMBDA_FUNCTION/NAME_OF_LAMBDA_FUNCTION"
+                ]
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {}
+        }
+    ]
+}
+```
