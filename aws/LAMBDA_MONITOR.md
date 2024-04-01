@@ -309,6 +309,7 @@ Create a role `OrganizationAccountAccessRole` with the following permissions
 
 Set the Trust relationships to the following.
 Replace `ROLE_OF_LAMBDA_FUNCTION` with the role of the Lambda function and `NAME_OF_LAMBDA_FUNCTION` with the name of the Lambda function.
+Replace `AWS_ACCOUNT_ID_ROOT` with the ID of the AWS Account where the Lambda function is hosted.
 
 ```json
 {
@@ -318,8 +319,8 @@ Replace `ROLE_OF_LAMBDA_FUNCTION` with the role of the Lambda function and `NAME
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-                    "arn:aws:iam::856952634940:root",
-                    "arn:aws:sts::856952634940:assumed-role/ROLE_OF_LAMBDA_FUNCTION/NAME_OF_LAMBDA_FUNCTION"
+                    "arn:aws:iam::AWS_ACCOUNT_ID_ROOT:root",
+                    "arn:aws:sts::AWS_ACCOUNT_ID_ROOT:assumed-role/ROLE_OF_LAMBDA_FUNCTION/NAME_OF_LAMBDA_FUNCTION"
                 ]
             },
             "Action": "sts:AssumeRole",
