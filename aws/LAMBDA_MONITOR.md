@@ -4,7 +4,7 @@
 
 This is a Lambda function that helps to monitor other AWS Accounts that you have control of
 
-## 2. Setup
+## 2. Setup (Main AWS Account)
 
 ### 2.1 Lambda Function
 
@@ -36,14 +36,46 @@ def get_monthly_spend(ce, start_date=None, end_date=None):
     if start_date is None:
         start_date = now.strftime('%Y-%m-01')
     if end_date is None:
-        end_date = now.strftime('%Y-%m-%d')
+        if now.day == 1:
+            end_date = now.strftime('%Y-%m-02')
+        else:
+            end_date = now.strftime('%Y-%m-%d')
 
     r = ce.get_cost_and_usage(
         TimePeriod={'Start': start_date, 'End': end_date},
         Granularity='MONTHLY',
         Metrics=['BlendedCost'])
     cost = r['ResultsByTime'][0]['Total']['BlendedCost']
-    return f"{cost['Unit']} {float(cost['Amount']):.2f}"
+    spend, unit = float(cost['Amount']), cost['Unit']
+    # print(f"Monthly spend: {unit} {spend:.2f}")
+    return spend, unit
+
+def get_yesterdays_spend(ce, max_items=10, threshold=0.01):
+    now = datetime.datetime.now()
+    yesterday = now - datetime.timedelta(days=1)
+    start_date = yesterday.strftime('%Y-%m-%d')
+    end_date = now.strftime('%Y-%m-%d')
+
+    r = ce.get_cost_and_usage(
+        TimePeriod={'Start': start_date, 'End': end_date},
+        Granularity='DAILY',
+        Metrics=['BlendedCost'],
+        GroupBy=[{
+            'Type': 'DIMENSION',
+            'Key': 'USAGE_TYPE'
+        }])
+    results = r['ResultsByTime'][0]['Groups']
+
+    spend = []
+    for x in results:
+        cost = x['Keys'][0]
+        amount = float(x['Metrics']['BlendedCost']['Amount'])
+        if amount >= threshold:
+            spend.append(
+                (cost, amount)
+            )
+    top_spend = sorted(spend, key=lambda x: x[1], reverse=True)
+    return top_spend
 
 # ----- EC2 -----
 def describe_instances(ec2):
@@ -77,58 +109,61 @@ def stop_instances(ec2):
     return instance_ids_stopped
 
 def lambda_handler(event, context):
-    account_id = event['account_id']
+    account_ids = event['account_ids']
     actions = event['actions']
     regions = event['regions']
+    topic_arn = event.get('topic_arn', None)
+    stop_ec2_threshold = event['stop_ec2_threshold']
 
-    session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
-
-    result = {}
-
-    if 'get_monthly_spend' in actions:
-        ce = boto3.client('ce')
-        root_account_spend = get_monthly_spend(ce)
-        print(f'Monthly spend of root account is USD {root_account_spend}')
-
-        ce = session.client('ce')
-        child_account_spend = get_monthly_spend(ce)
-        print(f'Monthly spend of {account_id} is USD {child_account_spend}')
-        result['Monthly Spend'] = {
-            'root': root_account_spend,
-            account_id: child_account_spend
-        }
+    results = {}
+    if 'report_spend' in actions:
+        spend = {}
+        for account_id in account_ids:
+            session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
+            ce = session.client('ce')
+            child_account_spend, unit = get_monthly_spend(ce)
+            child_account_top_spend = get_yesterdays_spend(ce)
+            spend[account_id] = {
+                "Monthly spend": child_account_spend,
+                "Yesterday's spend": child_account_top_spend
+            }
+            # print(f"{account_id}: {unit} {child_account_spend:.2f}")
+        results['Spend'] = spend
         
-        sns = boto3.client('sns')
-        response = sns.publish(
-            TopicArn='arn:aws:sns:ap-southeast-1:856952634940:CostReport',
-            Message=f'Your AWS Usage is:\n- Root account: {root_account_spend}\n- Account ID {account_id}: {child_account_spend}',
-            Subject='AWS Current Usage'
-        )
+        # Create and send message
+        message = 'AWS Accounts - Monthly Spend\n'
+        for account_id in account_ids:
+            message += f'\n - Account ID: {account_id} - USD {spend[account_id]["Monthly spend"]}'
+        print(message)
 
-    if 'describe_ec2' in actions:
-        ec2_descriptions = {}
-        for region in regions:
-            ec2 = session.client('ec2', region_name = region)
-            ec2_description = f'----- EC2 Instances ({region}) -----\n' + \
-            describe_instances(ec2)
-            print(ec2_description)
-            ec2_descriptions[region] = ec2_description
-        result['ec2'] = ec2_descriptions
+        if topic_arn is not None:
+            sns = boto3.client('sns')
+            response = sns.publish(
+                TopicArn=topic_arn,
+                Message=message,
+                Subject='AWS Current Usage'
+            )
 
     if 'stop_ec2' in actions:
         ec2_actions = {}
-        for region in regions:
-            ec2 = session.client('ec2', region_name = region)
-            instance_ids_stopped = stop_instances(ec2)
-            ec2_actions[region] = {
-                'Stopped EC2s': instance_ids_stopped
-            }
-            print(f'Region {region}: EC2s stopped: ' + ','.join(instance_ids_stopped))
-        result['ec2'] = ec2_actions
+        for account_id in account_ids:
+            session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
+            ce = session.client('ce')
+            child_account_spend, _ = get_monthly_spend(ce)
+            if child_account_spend > stop_ec2_threshold:
+                ec2_actions[account_id] = {}
+                for region in regions:
+                    ec2 = session.client('ec2', region_name = region)
+                    instance_ids_stopped = stop_instances(ec2)
+                    ec2_actions[account_id][region] = {
+                        'Stopped EC2s': instance_ids_stopped
+                    }
+                    print(f'Region {region}: EC2s stopped: ' + ','.join(instance_ids_stopped))
+        results['ec2'] = ec2_actions
 
     return {
         'statusCode': 200,
-        'body': json.dumps(result)
+        'body': json.dumps(results)
     }
 ```
 
@@ -149,7 +184,7 @@ Replace `AWS_ACCOUNT_ID_CHILD` with the AWS Account ID of the child account that
         },
         {
             "Effect": "Allow",
-            "Action": [
+            "Action":
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
             ],
@@ -174,11 +209,93 @@ Replace `AWS_ACCOUNT_ID_CHILD` with the AWS Account ID of the child account that
 }
 ```
 
-#### 2.1.3 Child AWS Account
+Trust Relationships (leave this as default)
 
-Create a role `OrganizationAccountAccessRole `
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+```
 
-Permissions
+
+#### 2.1.3 Lambda Function Test Event
+
+In the Lambda fucntion create a **Test event** with the following Event JSON:
+
+- replace `AWS_ACCOUNT_ID_CHILD` with the account number of child account, e.g. `012345678901`.
+- replace `us-east-`, `us-west-2`, `ap-southeast-1` with the regions that you wish to monitor.
+
+```json
+{
+  "account_ids": [
+    "AWS_ACCOUNT_ID_CHILD"
+  ],
+  "actions": [
+    "report_spend", "stop_ec2"
+  ],
+  "regions": [
+    "us-east-1",
+    "us-west-2",
+    "ap-southeast-1"
+  ],
+  "stop_ec2_threshold": 2000.0,
+  "topic_arn": "arn:aws:sns:REGION:AWS_ACCOUNT_ID_ROOT:CostReport"
+}
+```
+
+
+#### 2.1.4 Lambda Function Configuration
+
+Timeout: at least ~20 seconds
+
+
+### 2.2 SNS
+
+1. Create Topic, Type=Standard, Name=`CostReport`
+2. Create subscription, Protocol=Email, Endpoint=`youremail@yourdomain.com`
+3. Copy the Topic ARN which should have the following format: `arn:aws:sns:REGION:AWS_ACCOUNT_ID_ROOT:CostReport`
+4. When you have received the email, click the link to confirm your subscription.
+
+
+### 2.3 EventBridge
+
+1. In the Lambda function click on "Add trigger"
+2. For Trigger Source, choose "EventBridge (CloudWatch Events). Choose "Create a new rule". For Rule name, choose something like "DailyChecks". For Rule type, choose "Schedule expression". Enter something like "cron(0 9 * * ? *)". This runs when: minutes=0, hours=9, day_of_month=ANY, month=ANY, day_of_week=ANY, year=ANY. In other words, this Lambda function will be triggered at 9am every day, whereby an email will be sent to your inbox.
+3. Under **Targets**, **Additional settings**, for "Configure target input" specify "Constant (JSON text).
+4. Put the following inside the JSON text
+
+```json
+{
+  "account_ids": [
+    "AWS_ACCOUNT_ID_CHILD"
+  ],
+  "actions": [
+    "report_spend", "stop_ec2"
+  ],
+  "regions": [
+    "us-east-1",
+    "us-west-2",
+    "ap-southeast-1"
+  ],
+  "stop_ec2_threshold": 20.0,
+  "topic_arn": "arn:aws:sns:REGION:AWS_ACCOUNT_ID_ROOT:CostReport"
+}
+```
+
+## 3. Child AWS Account
+
+### 3.1 IAM Role
+
+Create a role `OrganizationAccountAccessRole` with the following permissions
 
 ```json
 {
@@ -193,7 +310,8 @@ Permissions
 }
 ```
 
-Trust relationships. Replace `ROLE_OF_LAMBDA_FUNCTION` with the role of the Lambda function and `NAME_OF_LAMBDA_FUNCTION` with the name of the Lambda function.
+Set the Trust relationships to the following.
+Replace `ROLE_OF_LAMBDA_FUNCTION` with the role of the Lambda function and `NAME_OF_LAMBDA_FUNCTION` with the name of the Lambda function.
 
 ```json
 {
