@@ -17,6 +17,7 @@ import datetime
 import json
 
 sts = boto3.client('sts')
+main_account_id = sts.get_caller_identity()['Account']
 
 # ----- STS -----
 def get_session(role_arn):
@@ -78,24 +79,6 @@ def get_yesterdays_spend(ce, max_items=10, threshold=0.01):
     return top_spend
 
 # ----- EC2 -----
-def describe_instances(ec2):
-    r = ec2.describe_instances()
-    output = 'InstanceId,Name,InstanceType,PublicIpAddress,InstanceState'
-    for reservation in r['Reservations']:
-        for instance in reservation['Instances']:
-            instance_id = instance['InstanceId']
-            instance_type = instance['InstanceType']
-            instance_ip = instance.get('PublicIpAddress', '(no public ip)')
-
-            instance_name = '(no name)'
-            for tag in instance['Tags']:
-                if tag['Key'] == 'Name':
-                    instance_name = tag['Value']
-
-            instance_state = instance['State']['Name']
-            output += f'\n{instance_id},{instance_name},{instance_type},{instance_ip},{instance_state}'
-    return output
-
 def stop_instances(ec2):
     r = ec2.describe_instances()
     instance_ids_stopped = []
@@ -119,21 +102,28 @@ def lambda_handler(event, context):
     if 'report_spend' in actions:
         spend = {}
         for account_id in account_ids:
-            session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
-            ce = session.client('ce')
-            child_account_spend, unit = get_monthly_spend(ce)
-            child_account_top_spend = get_yesterdays_spend(ce)
+            if account_id == main_account_id:
+                ce = boto3.client('ce')
+            else:
+                session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
+                ce = session.client('ce')
+            account_spend, unit = get_monthly_spend(ce)
+            account_top_spend = get_yesterdays_spend(ce)
             spend[account_id] = {
-                "Monthly spend": child_account_spend,
-                "Yesterday's spend": child_account_top_spend
+                "Monthly spend": account_spend,
+                "Yesterday's spend": account_top_spend
             }
-            # print(f"{account_id}: {unit} {child_account_spend:.2f}")
         results['Spend'] = spend
         
         # Create and send message
-        message = 'AWS Accounts - Monthly Spend\n'
+        message = 'AWS Accounts - Monthly Spend'
         for account_id in account_ids:
-            message += f'\n - Account ID: {account_id} - USD {spend[account_id]["Monthly spend"]}'
+            message += f'\n\n ----- Account ID {account_id}: USD {spend[account_id]["Monthly spend"]} (Month total) -----\nYesterday\'s spend:'
+            account_top_spend = spend[account_id]["Yesterday's spend"]
+            for i, (item, amount) in enumerate(account_top_spend):
+                message += f'\n{i+1:02d}. {item}: {amount}'
+                if i == 9:
+                    break
         print(message)
 
         if topic_arn is not None:
@@ -147,13 +137,20 @@ def lambda_handler(event, context):
     if 'stop_ec2' in actions:
         ec2_actions = {}
         for account_id in account_ids:
-            session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
-            ce = session.client('ce')
-            child_account_spend, _ = get_monthly_spend(ce)
-            if child_account_spend > stop_ec2_threshold:
+            if account_id == main_account_id:
+                ce = boto3.client('ce')
+            else:
+                session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
+                ce = session.client('ce')
+
+            account_spend, _ = get_monthly_spend(ce)
+            if account_spend > stop_ec2_threshold:
                 ec2_actions[account_id] = {}
                 for region in regions:
-                    ec2 = session.client('ec2', region_name = region)
+                    if account_id == main_account_id:
+                        ec2 = boto3.client('ec2', region_name = region)
+                    else:
+                        ec2 = session.client('ec2', region_name = region)
                     instance_ids_stopped = stop_instances(ec2)
                     ec2_actions[account_id][region] = {
                         'Stopped EC2s': instance_ids_stopped
