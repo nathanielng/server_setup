@@ -30,7 +30,7 @@ ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
 cd ~/.ssh/
 KEY_NAME="keypair-use1"; KEY_FILE="keypair-use1.pem"; REGION="us-east-1"
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/$KEY_FILE -q -N ""
-aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION
+aws ec2 import-key-pair --key-name ${KEY_NAME} --public-key-material fileb://${KEY_FILE}.pub --region ${REGION}
 ```
 
 ### 3.2 Shell
