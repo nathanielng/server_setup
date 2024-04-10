@@ -227,7 +227,7 @@ Resources:
                           ec2_actions[account_id] = {}
                           ec2_messages = []
                           for region in regions:
-                              if account_id == main_account_id:
+                              if account_id == "root" or account_id == main_account_id:
                                   ec2 = boto3.client('ec2', region_name = region)
                               else:
                                   ec2 = session.client('ec2', region_name = region)
