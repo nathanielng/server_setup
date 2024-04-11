@@ -9,19 +9,19 @@ Parameters:
     Description: Email address to receive notifications
 
   EC2Regions:
-    Type: String
-    Description: AWS regions to check for running EC2 instances to stop
+    Type: CommaDelimitedList
+    Description: AWS regions to check for running EC2 instances which will be stopped
     Default: "us-east-1,ap-southeast-1"
 
   CostThreshold:
     Type: Number
-    Description: Cost threshold beyond which EC2 instances will be stopped
+    Description: Budget threshold (USD) beyond which EC2 instances will be stopped
     Default: 5000.0
 
   CronExpression:
     Type: String
-    Description: Cron expression for running the lambda function
-    Default: "cron(0 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 * * ? *)"
+    Description: Cron expression for invoking the lambda function (UTC time zone). The following triggers at 1am (UTC) or 9am (UTC+8) every day.
+    Default: "cron(0 1 * * ? *)"
 
 
 Resources:
@@ -70,6 +70,8 @@ Resources:
               - Effect: Allow
                 Action:
                   - sns:Publish
+                  - ec2:DescribeInstances
+                  - ec2:StopInstances
                   - ce:GetCostAndUsage
                 Resource:
                   - '*'
@@ -81,7 +83,7 @@ Resources:
       Handler: index.lambda_handler
       Role: !GetAtt CostCheckerLambdaRole.Arn
       Runtime: python3.12
-      Timeout: 60
+      Timeout: 120
       Environment:
         Variables:
           EMAIL_ADDRESS: !Ref SubscribingEmail
@@ -158,7 +160,7 @@ Resources:
 
           # ----- EC2 -----
           def stop_instances(ec2):
-              r = ec2.describe_instances()
+              r = ec2.describe_instances(Filters=[{'Name':'instance-state-name','Values':['running']}])
               instance_ids_stopped = []
               for reservation in r['Reservations']:
                   for instance in reservation['Instances']:
@@ -171,9 +173,9 @@ Resources:
 
           # ----- Lambda -----
           def lambda_handler(event, context):
-              account_ids = ['root']
-              actions = ['report_spend', 'stop_ec2']
-              regions = os.getenv('EC2REGIONS', 'us-east-1').split(',')
+              account_ids = [ main_account_id ]
+              actions = ['report_spend', 'stop_ec2']  # Remove 'stop_ec2' if you don't want to stop EC2 instances. Remove 'report_spend' if you don't want to see spending reports.
+              regions = os.getenv('EC2_REGIONS', 'us-east-1').split(',')
               topic_arn = os.getenv('SNSTOPIC_ARN', None)
               stop_ec2_threshold = float(os.getenv('COST_THRESHOLD', '1000.0'))
 
@@ -181,7 +183,7 @@ Resources:
               if 'report_spend' in actions:
                   spend = {}
                   for account_id in account_ids:
-                      if account_id == "root" or account_id == main_account_id:
+                      if account_id == main_account_id:
                           ce = boto3.client('ce')
                       else:
                           session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
@@ -203,7 +205,6 @@ Resources:
                           message += f'\n{i+1:02d}. {item}: {amount:.2f}'
                           if i == 9:
                               break
-                  print(message)
 
                   if topic_arn is not None:
                       sns = boto3.client('sns')
@@ -216,7 +217,7 @@ Resources:
               if 'stop_ec2' in actions:
                   ec2_actions = {}
                   for account_id in account_ids:
-                      if account_id == "root" or account_id == main_account_id:
+                      if account_id == main_account_id:
                           ce = boto3.client('ce')
                       else:
                           session = get_session(f"arn:aws:iam::{account_id}:role/OrganizationAccountAccessRole")
@@ -227,7 +228,7 @@ Resources:
                           ec2_actions[account_id] = {}
                           ec2_messages = []
                           for region in regions:
-                              if account_id == "root" or account_id == main_account_id:
+                              if account_id == main_account_id:
                                   ec2 = boto3.client('ec2', region_name = region)
                               else:
                                   ec2 = session.client('ec2', region_name = region)
@@ -235,37 +236,41 @@ Resources:
                               ec2_actions[account_id][region] = {
                                   'Stopped EC2s': instance_ids_stopped
                               }
-                              ec2_messages.append(f'Region {region}: EC2s stopped: ' + ','.join(instance_ids_stopped))
+                              if len(instance_ids_stopped) > 0:
+                                  ec2_messages.append(f'Region {region}: EC2s stopped: ' + ','.join(instance_ids_stopped))
 
-                          ec2_messages = '\n'.join(ec2_messages)
-                          results['ec2'] = ec2_actions
-                          message += f'\n\n----- EC2 Instances Stopped -----\n\n{ec2_messages}'
+                          if len(ec2_messages) > 0:
+                              ec2_messages = '\n'.join(ec2_messages)
+                              results['ec2'] = ec2_actions
+                              message += f'\n\n----- EC2 Instances Stopped -----\n\n{ec2_messages}'
 
-                          if topic_arn is not None:
-                              sns = boto3.client('sns')
-                              response = sns.publish(
-                                  TopicArn=topic_arn,
-                                  Message=ec2_messages,
-                                  Subject='EC2 Instances Stopped'
-                              )
-              return message
-              # return {
-              #     'statusCode': 200,
-              #     'body': results  # json.dumps(results)
-              # }
+                              if topic_arn is not None:
+                                  sns = boto3.client('sns')
+                                  response = sns.publish(
+                                      TopicArn=topic_arn,
+                                      Message=ec2_messages,
+                                      Subject='EC2 Instances Stopped'
+                                  )
+              print(message)
 
-  # InvokeConfig:
-  #   Type: AWS::Lambda::EventInvokeConfig
-  #   Properties:
-  #     FunctionName: !Ref CostCheckerLambda
-  #     Qualifier: $LATEST
-  #     MaximumEventAgeInSeconds: 60
-  #     MaximumRetryAttempts: 0
-  #     DestinationConfig:
-  #       OnSuccess:
-  #         Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
-  #       OnFailure:
-  #         Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
+              return {
+                  'statusCode': 200,
+                  'body': results,
+                  'message': message
+              }
+
+  InvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref CostCheckerLambda
+      Qualifier: $LATEST
+      MaximumEventAgeInSeconds: 60
+      MaximumRetryAttempts: 0
+      DestinationConfig:
+        # OnSuccess:
+        #   Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
+        OnFailure:
+          Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-events-rule.html
   EventsRuleDailyCostChecks:
