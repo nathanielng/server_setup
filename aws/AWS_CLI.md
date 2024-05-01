@@ -67,6 +67,13 @@ pcluster list-official-images --os alinux2 --architecture x86_64
 pcluster list-official-images --os ubuntu2204 --architecture arm64
 ```
 
+Get list of EC2 AMI names, then choose the AMI ID corresponding to one of the names
+
+```bash
+aws ec2 describe-images --region $REGION --owners amazon --query 'reverse(sort_by(Images, &CreationDate))[].Name' > ami_names.json
+AMI_ID=$(aws ec2 describe-images --region $REGION --owners amazon --filters "Name=name,Values='Deep Learning Base Proprietary Nvidia Driver GPU AMI (Ubuntu 20.04) 20240429'" --query 'Images[0].ImageId' --output text); echo $AMI_ID
+```
+
 Launch an EC2 Instance (specifying a name and EBS volume size)
 
 ```bash
