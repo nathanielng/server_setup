@@ -16,7 +16,7 @@ sudo usermod -a -G docker ec2-user
 sudo reboot
 ```
 
-Ubuntu Docker Installation (from https://github.com/aws-samples/amazon-sagemaker-immersion-day/blob/master/bring-your-own-model/bring-custom-container.ipynb)
+Ubuntu Docker Installation (from https://github.com/aws-samples/amazon-sagemaker-immersion-day/blob/master/bring-your-own-model/bring-custom-container.ipynb and https://docs.openwebui.com/getting-started/)
 
 ```bash
 sudo apt-get update
@@ -35,8 +35,9 @@ sudo apt-get update
 ## Currently only Docker version 20.10.X is supported in Studio: see https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-local.html
 # pick the latest patch from:
 # apt-cache madison docker-ce | awk '{ print $3 }' | grep -i 20.10
-VERSION_STRING=5:20.10.24~3-0~ubuntu-jammy
-sudo apt-get install docker-ce-cli=$VERSION_STRING docker-compose-plugin -y
+# VERSION_STRING=5:20.10.24~3-0~ubuntu-jammy
+# sudo apt-get install docker-ce-cli=$VERSION_STRING docker-compose-plugin -y
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
 
 # validate the Docker Client is able to access Docker Server at [unix:///docker/proxy.sock]
 docker version
