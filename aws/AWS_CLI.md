@@ -134,7 +134,7 @@ DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_
 Get mappings between Availability Zone names and Zone IDs
 
 ```bash
-aws ec2 describe-availability-zones --region ap-southeast-1 --query "[AvailabilityZones][].[ZoneName,ZoneId]"
+aws ec2 describe-availability-zones --region ap-southeast-1 --query "[AvailabilityZones][].[ZoneName,ZoneId]" --output text
 ```
 
 
