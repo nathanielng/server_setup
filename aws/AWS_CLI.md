@@ -106,6 +106,12 @@ PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$INSTANCE
 echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 ```
 
+Check whether a specific EC2 instance type (such as `hpc6a.48xlarge`) is available in a specific Availability Zone
+
+```bash
+aws ec2 describe-reserved-instances-offerings --region ap-southeast-1 --availability-zone ap-southeast-1a --offering-type "No Upfront" --offering-class "standard" --max-duration 31536000 --filters "Name=instance-type,Values=hpc6a.48xlarge" "Name=product-description,Values=Linux/UNIX"
+```
+
 
 
 ### 2.2 VPCs and Subnets
@@ -123,6 +129,12 @@ Default subnet of default VPC: to get the first subnet, or the subnet correspond
 ```bash
 aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_VPC} --filter Name=default-for-az,Values=true --query "Subnets[].SubnetId" --max-items 1 --output text | head -1
 DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_VPC} --filter Name=default-for-az,Values=true Name=availability-zone-id,Values=apse1-az1 --query "Subnets[].SubnetId" --output text)
+```
+
+Get mappings between Availability Zone names and Zone IDs
+
+```bash
+aws ec2 describe-availability-zones --region ap-southeast-1 --query "[AvailabilityZones][].[ZoneName,ZoneId]"
 ```
 
 
