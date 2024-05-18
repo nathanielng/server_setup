@@ -1,7 +1,11 @@
+# Deploy this template with:
+#   aws cloudformation create-stack --stack-name aws-cost-checker --template-body file://lambda_monitor.yaml --region ap-southeast-1 ...
+# Validate this template with:
+#   aws cloudformation validate-template --template-body file://lambda_monitor.yaml
+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: Lambda function for checking costs and stopping EC2 instances, with SNS email subscription
-
 
 Parameters:
   SubscribingEmail:
@@ -9,19 +13,24 @@ Parameters:
     Description: Email address to receive notifications
 
   EC2Regions:
-    Type: CommaDelimitedList
+    Type: String
     Description: AWS regions to check for running EC2 instances which will be stopped
     Default: "us-east-1,ap-southeast-1"
+
+  AWSAccountIDs:
+    Type: String
+    Description: List of AWS Account IDs to check for costs. Account IDs should be separated by commas.
 
   CostThreshold:
     Type: Number
     Description: Budget threshold (USD) beyond which EC2 instances will be stopped
-    Default: 5000.0
+    Default: 2000.0
 
   CronExpression:
     Type: String
     Description: Cron expression for invoking the lambda function (UTC time zone). The following triggers at 1am (UTC) or 9am (UTC+8) every day.
     Default: "cron(0 1 * * ? *)"
+
 
 
 Resources:
@@ -69,10 +78,10 @@ Resources:
                   - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*'
               - Effect: Allow
                 Action:
-                  - sns:Publish
+                  - ce:GetCostAndUsage
                   - ec2:DescribeInstances
                   - ec2:StopInstances
-                  - ce:GetCostAndUsage
+                  - sns:Publish
                 Resource:
                   - '*'
 
@@ -86,6 +95,7 @@ Resources:
       Timeout: 120
       Environment:
         Variables:
+          AWS_ACCOUNT_IDS: !Ref AWSAccountIDs
           EMAIL_ADDRESS: !Ref SubscribingEmail
           EC2_REGIONS: !Ref EC2Regions
           COST_THRESHOLD: !Ref CostThreshold
@@ -174,10 +184,14 @@ Resources:
           # ----- Lambda -----
           def lambda_handler(event, context):
               account_ids = [ main_account_id ]
+              AWS_ACCOUNT_IDS = os.getenv('AWS_ACCOUNT_IDS', '')
+              if len(AWS_ACCOUNT_IDS) > 0:
+                  account_ids += [ x.strip() for x in AWS_ACCOUNT_IDS.split(',') ]
               actions = ['report_spend', 'stop_ec2']  # Remove 'stop_ec2' if you don't want to stop EC2 instances. Remove 'report_spend' if you don't want to see spending reports.
-              regions = os.getenv('EC2_REGIONS', 'us-east-1').split(',')
+              regions = os.getenv('EC2_REGIONS', AWS_DEFAULT_REGION).split(',')
               topic_arn = os.getenv('SNSTOPIC_ARN', None)
-              stop_ec2_threshold = float(os.getenv('COST_THRESHOLD', '1000.0'))
+              stop_ec2_threshold = float(os.getenv('COST_THRESHOLD', '2000.0'))
+              json_output = True
 
               results = {}
               if 'report_spend' in actions:
@@ -251,26 +265,17 @@ Resources:
                                       Message=ec2_messages,
                                       Subject='EC2 Instances Stopped'
                                   )
+
               print(message)
 
-              return {
-                  'statusCode': 200,
-                  'body': results,
-                  'message': message
-              }
-
-  InvokeConfig:
-    Type: AWS::Lambda::EventInvokeConfig
-    Properties:
-      FunctionName: !Ref CostCheckerLambda
-      Qualifier: $LATEST
-      MaximumEventAgeInSeconds: 60
-      MaximumRetryAttempts: 0
-      DestinationConfig:
-        # OnSuccess:
-        #   Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
-        OnFailure:
-          Destination: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:ReportCosts"
+              if json_output:
+                  return {
+                      'statusCode': 200,
+                      'body': results,
+                      'message': message
+                  }
+              else:
+                  return message
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-events-rule.html
   EventsRuleDailyCostChecks:
