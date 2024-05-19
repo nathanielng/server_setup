@@ -58,6 +58,19 @@ Get the EC2 instances in a specific region & availability zone
 aws ec2 describe-instance-type-offerings --location-type "availability-zone" --filters Name=location,Values=us-east-2a --region us-east-2 --query "InstanceTypeOfferings[*].[InstanceType]" --output text | sort
 ```
 
+Get the allowed availability zone for HPC instances
+
+```bash
+aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=hpc6a.* --region ap-southeast-1 --query InstanceTypeOfferings[*].[InstanceType,Location]
+aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=hpc7a.* --region us-east-2 --query InstanceTypeOfferings[*].[InstanceType,Location]
+```
+
+Check whether a specific EC2 instance type (such as `hpc6a.48xlarge`) is available in a specific Availability Zone
+
+```bash
+aws ec2 describe-reserved-instances-offerings --region ap-southeast-1 --availability-zone ap-southeast-1a --offering-type "No Upfront" --offering-class "standard" --max-duration 31536000 --filters "Name=instance-type,Values=hpc6a.48xlarge" "Name=product-description,Values=Linux/UNIX"
+```
+
 Get EC2 image ids
 
 ```bash
@@ -105,13 +118,6 @@ INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$INSTAN
 PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$INSTANCE_NAME" "Name=instance-state-name,Values=running" --output text --query 'Reservations[*].Instances[0].PublicIpAddress')
 echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 ```
-
-Check whether a specific EC2 instance type (such as `hpc6a.48xlarge`) is available in a specific Availability Zone
-
-```bash
-aws ec2 describe-reserved-instances-offerings --region ap-southeast-1 --availability-zone ap-southeast-1a --offering-type "No Upfront" --offering-class "standard" --max-duration 31536000 --filters "Name=instance-type,Values=hpc6a.48xlarge" "Name=product-description,Values=Linux/UNIX"
-```
-
 
 
 ### 2.2 VPCs and Subnets
