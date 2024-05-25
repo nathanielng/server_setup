@@ -54,6 +54,12 @@ source ~/.bashrc
 
 #### 3.2.2 Zsh + Starship
 
+Check current shell
+
+```bash
+echo $SHELL
+```
+
 Change shell to Zsh using:
 
 ```bash
