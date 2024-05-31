@@ -58,11 +58,16 @@ Get the EC2 instances in a specific region & availability zone
 aws ec2 describe-instance-type-offerings --location-type "availability-zone" --filters Name=location,Values=us-east-2a --region us-east-2 --query "InstanceTypeOfferings[*].[InstanceType]" --output text | sort
 ```
 
-Get the allowed availability zone for HPC instances
+Get the allowed availability zone (or zone id) for HPC instances
 
 ```bash
 aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=hpc6a.* --region ap-southeast-1 --query InstanceTypeOfferings[*].[InstanceType,Location]
 aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=hpc7a.* --region us-east-2 --query InstanceTypeOfferings[*].[InstanceType,Location]
+```
+
+```bash
+aws ec2 describe-instance-type-offerings --location-type availability-zone-id --filters Name=instance-type,Values=hpc6a.* --region ap-southeast-1 --query InstanceTypeOfferings[*].[InstanceType,Location]
+aws ec2 describe-instance-type-offerings --location-type availability-zone-id --filters Name=instance-type,Values=hpc7a.* --region us-east-2 --query InstanceTypeOfferings[*].[InstanceType,Location]
 ```
 
 Check whether a specific EC2 instance type (such as `hpc6a.48xlarge`) is available in a specific Availability Zone
