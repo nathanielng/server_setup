@@ -353,7 +353,7 @@ aws kms describe-key --region $REGION --key-id $KMS_KEY0 --query "KeyMetadata.Cr
 ### 4.1 File Sharing
 
 ```bash
-# Share file in S3 bucket using pre-signed URLs
+# Share file in S3 bucket using pre-signed URLs, with the maximum expiry of 1 week (604,800 seconds)
 aws s3 presign s3://mys3bucket/folder/filename --expires-in 604800
 
 # Download file
