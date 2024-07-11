@@ -125,7 +125,9 @@ echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 ```
 
 
-### 2.2 VPCs and Subnets
+### 2.2 Networking
+
+#### 2.2.1 VPCs & Subnets
 
 Retrieve information on VPCs:
 
@@ -148,6 +150,20 @@ Get mappings between Availability Zone names and Zone IDs
 aws ec2 describe-availability-zones --region ap-southeast-1 --query "[AvailabilityZones][].[ZoneName,ZoneId]" --output text
 ```
 
+#### 2.2.2 IP Ranges
+
+Get IP ranges
+
+```bash
+curl -LO https://ip-ranges.amazonaws.com/ip-ranges.json
+```
+
+Processing IP ranges
+
+```bash
+jq '.prefixes[] | select(.region=="ap-southeast-1") | .service' ip-ranges.json | uniq  # List of service names in a region
+jq '.prefixes[] | .region' ip-ranges.json | sort | uniq  # List of regions
+```
 
 
 ### 2.3 Security Groups
