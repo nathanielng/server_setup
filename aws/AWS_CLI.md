@@ -76,6 +76,12 @@ Check whether a specific EC2 instance type (such as `hpc6a.48xlarge`) is availab
 aws ec2 describe-reserved-instances-offerings --region ap-southeast-1 --availability-zone ap-southeast-1a --offering-type "No Upfront" --offering-class "standard" --max-duration 31536000 --filters "Name=instance-type,Values=hpc6a.48xlarge" "Name=product-description,Values=Linux/UNIX"
 ```
 
+Get EC2 networking bandwidth [[ref](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html)]
+
+```bash
+aws ec2 describe-instance-types --filters "Name=instance-type,Values=r8g.*" --query "InstanceTypes[].[InstanceType,NetworkInfo.NetworkPerformance,NetworkInfo.NetworkCards[0].BaselineBandwidthInGbps]" --output table
+```
+
 Get EC2 image ids
 
 ```bash
