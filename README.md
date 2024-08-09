@@ -122,3 +122,10 @@ cd ~
 virtualenv ~/venv -p python3
 source ~/venv/bin/activate
 ```
+
+### 3.5 Node.js [via nvm](https://nodejs.org/en/download/package-manager)
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+```
