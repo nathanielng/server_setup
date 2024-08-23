@@ -52,6 +52,12 @@ EOF
 source ~/.bashrc
 ```
 
+Example EC2 user data
+
+```bash
+curl -s https://raw.githubusercontent.com/nathanielng/server_setup/master/bash_al2023_setup.sh | bash
+```
+
 #### 3.2.2 Zsh + Starship
 
 Check current shell
