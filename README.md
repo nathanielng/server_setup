@@ -127,6 +127,7 @@ pip install virtualenv
 cd ~
 virtualenv ~/venv -p python3
 source ~/venv/bin/activate
+pip install -U pip
 ```
 
 Python 3.11 on Amazon Linux 2023
@@ -138,6 +139,7 @@ python3.11 get-pip.py
 python3.11 -m pip install virtualenv
 python3.11 -m virtualenv $HOME/venv
 source $HOME/venv/bin/activate
+pip install -U pip
 ```
 
 ### 3.5 Node.js [via nvm](https://nodejs.org/en/download/package-manager)
