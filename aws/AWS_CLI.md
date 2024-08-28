@@ -130,6 +130,12 @@ PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$INSTANCE
 echo "Instance ID: $INSTANCE_ID (IP: $PUBLIC_IP)"
 ```
 
+Get EC2 Instance Profiles
+
+```bash
+aws iam list-instance-profiles | jq '.InstanceProfiles[].InstanceProfileName'
+aws iam list-instance-profiles --query "InstanceProfiles[].InstanceProfileName" --output text | tr "\t" "\n"
+```
 
 ### 2.2 Networking
 
