@@ -117,6 +117,12 @@ git config --local user.name "$GIT_USERNAME"
 git config --local user.email "$GIT_USEREMAIL"
 ```
 
+Change Git remote url
+
+```bash
+git remote set-url origin git@gitlab.com:userid/reponame.git
+git push origin main
+```
 
 ### 3.4 Python
 
