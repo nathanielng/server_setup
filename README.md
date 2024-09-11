@@ -120,6 +120,7 @@ git config --local user.email "$GIT_USEREMAIL"
 Change Git remote url
 
 ```bash
+git remote -v
 git remote set-url origin git@gitlab.com:userid/reponame.git
 git push origin main
 ```
