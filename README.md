@@ -118,6 +118,11 @@ git config --local user.name "$GIT_USERNAME"
 git config --local user.email "$GIT_USEREMAIL"
 ```
 
+```bash
+git config --local user.name "{FirstName} {LastName}"
+git config --local user.email {username}@users.noreply.github.com
+```
+
 Change Git remote url
 
 ```bash
