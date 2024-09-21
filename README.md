@@ -105,6 +105,7 @@ curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta
 ### 3.3 Git
 
 ```bash
+git config --global init.defaultBranch main
 git config --global credential.helper store
 git config --global credential.helper 'cache --timeout=604800'  # 1 week
 git clone https://github.com/{git_username}/{project_name}
