@@ -48,6 +48,7 @@ HISTFILESIZE=50000
 TERM='xterm-256color'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
+printf '\e[?2004l'
 EOF
 source ~/.bashrc
 ```
