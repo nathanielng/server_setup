@@ -103,6 +103,14 @@ PUBLIC_IP=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/
 curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/
 ```
 
+#### 3.2.3 Parsing JSON with jq
+
+```bash
+command | jq '.'
+command | jq '.fieldname[]'
+command | jq '.fieldname[] | "\(.subfield1) \(.subfield2)"'
+```
+
 ### 3.3 Git
 
 ```bash
