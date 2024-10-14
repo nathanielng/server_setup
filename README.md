@@ -103,7 +103,7 @@ PUBLIC_IP=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/
 curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/
 ```
 
-#### 3.2.3 Parsing JSON with jq
+#### 3.2.4 Parsing JSON with jq
 
 ```bash
 command | jq '.'
