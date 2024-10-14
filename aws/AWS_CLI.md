@@ -87,8 +87,11 @@ Get EC2 image ids
 ```bash
 aws ec2 describe-images --owners self amazon --filters "Name=root-device-type,Values=ebs"
 aws ssm get-parameters-by-path --path /aws/service/ami-amazon-linux-latest --query "Parameters[].Name"
+aws ssm get-parameters-by-path --path /aws/service/ami-windows-latest --query "Parameters[].Name"
+aws ec2 run-instances --image-id resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 --instance-type t3.micro --key-name mykeypair
 pcluster list-official-images --os alinux2 --architecture x86_64
 pcluster list-official-images --os ubuntu2204 --architecture arm64
+pcluster list-official-images --region us-east-2 | jq '.images[] | "\(.amiId) \(.name)"'
 ```
 
 Get list of EC2 AMI names, then choose the AMI ID corresponding to one of the names
