@@ -5,12 +5,27 @@
 ```bash
 mkdir -p my-app
 cd my-app
+mkdir -p .ebextensions/
 ```
 
-## 2. Procfile
+## 2. Elastic Beanstalk Files
+
+### 2.1 Procfile
 
 ```bash
+cat > Procfile << EOF
 web: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+EOF
+```
+
+### 2.2 Python Config
+
+```
+cat > python.config << EOF
+option_settings:
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: app:main
+EOF
 ```
 
 ## 3. requirements.txt file (Python)
