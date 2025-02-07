@@ -173,3 +173,43 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 nvm install --lts
 ```
+
+### 3.6 Docker
+
+**Amazon Linux 2023**
+
+```bash
+sudo yum -y update && yum -y install docker
+sudo chgrp docker $(which docker)
+sudo chmod g+s $(which docker)
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
+
+
+### 3.7 CDK (Node.js + Python3.11 + Docker)
+
+**Amazon Linux 2023**
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+nvm install --lts
+npm install -g aws-cdk
+
+sudo dnf install -y python3.11
+curl -Os https://bootstrap.pypa.io/get-pip.py
+python3.11 get-pip.py 
+python3.11 -m pip install virtualenv
+python3.11 -m virtualenv $HOME/venv
+source $HOME/venv/bin/activate
+pip install -U pip
+
+sudo yum -y update && yum -y install docker
+sudo chgrp docker $(which docker)
+sudo chmod g+s $(which docker)
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
