@@ -199,7 +199,7 @@ export NVM_DIR="$HOME/.nvm"
 nvm install --lts
 npm install -g aws-cdk
 
-sudo dnf install -y python3.11
+sudo dnf install -y python3.11 git
 curl -Os https://bootstrap.pypa.io/get-pip.py
 python3.11 get-pip.py 
 python3.11 -m pip install virtualenv
