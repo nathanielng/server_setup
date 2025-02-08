@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Add the following to EC2 User Data
+# curl -o- https://raw.githubusercontent.com/nathanielng/server_setup/refs/heads/master/aws/setup_cdk.sh | bash
+
 # Setup NodeJS & AWS CDK
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
