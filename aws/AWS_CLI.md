@@ -11,6 +11,12 @@ DEFAULT_SUBNET=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEFAULT_
 DEFAULT_SG=$(aws ec2 describe-security-groups --query "SecurityGroups[*].GroupId" --filter "Name=vpc-id,Values=${DEFAULT_VPC}" "Name=group-name,Values=default")
 ```
 
+Get caller identity
+
+```bash
+aws sts get-caller-identity
+```
+
 ## 2. EC2
 
 Setup new EC2 instance:
