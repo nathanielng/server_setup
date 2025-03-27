@@ -33,3 +33,13 @@ openssl genrsa -out private_key.pem 2048
 openssl rsa -pubout -in private_key.pem -out public_key.pem
 ```
 
+
+## 3. Budgets
+
+```bash
+export BUDGET_NAME="Monthly-Budget-2000"
+export BUDGET_AMOUNT="2000"
+export EMAIL="..."
+curl -LO https://raw.githubusercontent.com/nathanielng/server_setup/refs/heads/master/aws/aws_budget_setup.py
+python aws_budget_setup.py
+```
