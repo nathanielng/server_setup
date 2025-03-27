@@ -8,6 +8,7 @@ BUDGET_AMOUNT=os.getenv('BUDGET_AMOUNT', None)
 EMAIL=os.getenv('EMAIL', None)
 if BUDGET_NAME is None or BUDGET_AMOUNT is None or EMAIL is None:
     print('Please specify BUDGET_NAME, BUDGET_AMOUNT, and EMAIL as environment variables')
+    print(f'BUDGET_NAME={BUDGET_NAME}, BUDGET_AMOUNT={BUDGET_AMOUNT}, EMAIL={EMAIL}')
     exit()
 
 client = boto3.client('budgets')
