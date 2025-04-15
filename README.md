@@ -213,3 +213,13 @@ sudo chmod g+s $(which docker)
 sudo systemctl enable docker.service
 sudo systemctl start docker.service
 ```
+
+### 3.8 s5cmd
+
+**Amazon Linux 2023**
+
+```bash
+sudo dnf install go
+go install github.com/peak/s5cmd/v2@master
+export PATH="$PATH:/home/ec2-user/go/bin"
+```
