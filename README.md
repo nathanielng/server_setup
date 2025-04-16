@@ -164,6 +164,18 @@ source $HOME/venv/bin/activate
 pip install -U pip
 ```
 
+Python 3.11 build environment on Amazon Linux 2023
+
+```bash
+sudo dnf install -y python3.11-devel git gcc g++ 
+curl -Os https://bootstrap.pypa.io/get-pip.py
+python3.11 get-pip.py 
+python3.11 -m pip install virtualenv
+python3.11 -m virtualenv $HOME/venv
+source $HOME/venv/bin/activate
+pip install -U pip setuptools wheel
+```
+
 ### 3.5 Node.js [via nvm](https://nodejs.org/en/download/package-manager)
 
 ```bash
