@@ -219,7 +219,7 @@ python3.11 -m virtualenv $HOME/venv
 source $HOME/venv/bin/activate
 pip install -U pip
 
-sudo yum -y update && yum -y install docker
+sudo yum -y update && sudo yum -y install docker
 sudo chgrp docker $(which docker)
 sudo chmod g+s $(which docker)
 sudo systemctl enable docker.service
