@@ -16,6 +16,16 @@ sudo usermod -a -G docker ec2-user
 sudo reboot
 ```
 
+Amazon Linux 2023 Docker Installation
+
+```bash
+sudo yum -y update && sudo yum -y install docker
+sudo chgrp docker $(which docker)
+sudo chmod g+s $(which docker)
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
+
 Ubuntu Docker Installation (from https://github.com/aws-samples/amazon-sagemaker-immersion-day/blob/master/bring-your-own-model/bring-custom-container.ipynb and https://docs.openwebui.com/getting-started/)
 
 ```bash
