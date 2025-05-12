@@ -183,7 +183,31 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ~/.bash_profile
 nvm install --lts
+```
+
+Amplify Installation
+
+```bash
+cd $HOME && git clone https://github.com/nathanielng/server_setup && cd server_setup
+GIT_USERNAME=$(git --no-pager show -s --format='%an' HEAD)
+GIT_USEREMAIL=$(git --no-pager show -s --format='%ae' HEAD)
+git config --global user.name "$GIT_USERNAME"
+git config --global user.email "$GIT_USEREMAIL"
+```
+
+Create a new git repository on https://github.com, with the name $REPONAME, before running the following steps.
+
+```bash
+cd $HOME && git clone https://github.com/aws-samples/amplify-vite-react-template.git && cd amplify-vite-react-template/
+USERNAME="..."
+REPONAME="..."
+git remote set-url origin https://github.com/$USERNAME/$REPONAME.git
+git config --global credential.helper store
+git config --global credential.helper 'cache --timeout=604800'  # 1 week
+cd $HOME && mv amplify-vite-react-template $REPONAME && cd $REPONAME
+git push origin main
 ```
 
 ### 3.6 Docker
