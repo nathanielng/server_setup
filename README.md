@@ -155,7 +155,7 @@ pip install -U pip
 Python 3.11 on Amazon Linux 2023
 
 ```bash
-dnf install -y python3.11
+sudo dnf install -y python3.11
 curl -Os https://bootstrap.pypa.io/get-pip.py
 python3.11 get-pip.py 
 python3.11 -m pip install virtualenv
@@ -215,7 +215,7 @@ git push origin main
 **Amazon Linux 2023**
 
 ```bash
-sudo yum -y update && yum -y install docker
+sudo yum -y update && sudo yum -y install docker
 sudo chgrp docker $(which docker)
 sudo chmod g+s $(which docker)
 sudo systemctl enable docker.service
