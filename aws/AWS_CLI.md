@@ -325,23 +325,27 @@ aws iam create-group --group-name MyAdminGroup
 aws iam attach-group-policy --group-name MyAdminGroup --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
-Create a new IAM user, and add that user to the IAM group created in the previous step
+Create a new IAM user, and add that user to the IAM group created in the previous step (Option 1) or attach the policy directly (Option 2)
 
 ```bash
-aws iam create-user --user-name MyAdminUser
-aws iam add-user-to-group --user-name MyAdminUser --group-name MyAdminGroup
+USER="MyAdminUser"; GROUP="MyAdminGroup"
+aws iam create-user --user-name $USER
+aws iam add-user-to-group --user-name $USER --group-name $GROUP   # Option 1
+aws iam attach-user-policy --user-name $USER --policy-arn arn:aws:iam::aws:policy/AdministratorAccess   # Option 2
 ```
 
 If you need to give the IAM admin user access to the AWS console, use:
 
 ```bash
-aws iam create-login-profile --user-name MyAdminUser --password MyLoginPasswordHere123
+aws iam create-login-profile --user-name $USER --password MyLoginPasswordHere123
 ```
 
 If you need to generate a `SecretAccessKey` and `AccessKeyId` for use with the AWS CLI or with the AWS SDK, such as Python Boto3, use:
 
 ```bash
-aws iam create-access-key --user-name MyAdminUser
+aws iam create-access-key --user-name $USER 2>&1 | tee key.json
+AWS_ACCESS_KEY_ID=$(cat key.json | jq .AccessKey.AccessKeyId)
+AWS_SECRET_ACCESS_KEY=$(cat key.json | jq .AccessKey.SecretAccessKey)
 ```
 
 As an example output, you will see something like the following:
