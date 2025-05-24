@@ -405,6 +405,15 @@ curl -o "filename" "https://mys3bucket.s3.{REGION}.amazonaws.com/folder/filename
 
 ```bash
 aws bedrock-agent list-knowledge-bases --region us-east-1 --output json
+KNOWLEDGE_BASE_ID=$(aws bedrock-agent list-knowledge-bases --region $AWS_REGION --query 'knowledgeBaseSummaries[].knowledgeBaseId' --output text)
+```
+
+### 4.3 Open Search
+
+```bash
+OPENSEARCH_COLLECTION_ID=$(aws opensearchserverless list-collections --query "collectionSummaries[].id" --output text)
+OPENSEARCH_ENDPOINT=$(aws opensearchserverless batch-get-collection --ids $OPENSEARCH_COLLECTION_ID --query 'collectionDetails[].collectionEndpoint' --output text)
+OPENSEARCH_HOST="${OPENSEARCH_ENDPOINT#https://*}"
 ```
 
 ## 5. Cloudformation
