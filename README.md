@@ -176,6 +176,23 @@ source $HOME/venv/bin/activate
 pip install -U pip setuptools wheel
 ```
 
+UV Python build environment on Amazon Linux 2023
+
+```bash
+sudo dnf install -y git gcc g++ 
+curl -LsSf https://astral.sh/uv/install.sh | sh
+if [ "$SHELL" = "/bin/bash" ]; then
+  echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc
+  echo 'eval "$(uvx --generate-shell-completion bash)"' >> ~/.bashrc
+fi
+```
+
+```bash
+uv init
+uv add {python_package}
+```
+
+
 ### 3.5 Node.js [via nvm](https://nodejs.org/en/download/package-manager)
 
 ```bash
