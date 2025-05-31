@@ -189,6 +189,7 @@ fi
 
 ```bash
 uv init
+uv python install 3.13
 uv add {python_package}
 ```
 
