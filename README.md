@@ -194,6 +194,16 @@ uv add setuptools wheel
 uv add --script myscripy.py "boto3"
 ```
 
+Python 3.13 (pyenv) environment on Mac
+
+```bash
+brew install pyenv
+alias python=python3
+pyenv install 3.13
+cd folder/
+pyenv local 3.13
+```
+
 
 ### 3.5 Node.js [via nvm](https://nodejs.org/en/download/package-manager)
 
