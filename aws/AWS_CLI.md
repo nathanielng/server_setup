@@ -362,8 +362,21 @@ As an example output, you will see something like the following:
 }
 ```
 
+### 3.2 Cleanup IAM
 
-### 3.2 KMS Keys
+```bash
+ROLE="..."
+ROLE_ARN=$(aws iam list-roles --query "Roles[?RoleName=='$ROLE'].Arn" --output text)
+ROLE_POLICIES=$(aws iam list-attached-role-policies --role-name $ROLE --query 'AttachedPolicies[*].PolicyArn' --output text)
+for policy in $ROLE_POLICIES; do
+    aws iam detach-role-policy --role-name $ROLE --policy-arn $policy
+    aws iam delete-policy --policy-arn $policy
+done
+aws iam delete-role --role-name $ROLE
+```
+
+
+### 3.3 KMS Keys
 
 Look up the creation of a specific KMS key in Cloudtrail
 
@@ -408,6 +421,14 @@ aws bedrock-agent list-knowledge-bases --region us-east-1 --output json
 KNOWLEDGE_BASE_ID=$(aws bedrock-agent list-knowledge-bases --region $AWS_REGION --query 'knowledgeBaseSummaries[].knowledgeBaseId' --output text)
 ```
 
+Cleanup Bedrock Knowlege Base
+
+```bash
+aws bedrock-agent list-knowledge-bases --region $REGION
+KB_ID=$(aws bedrock-agent list-knowledge-bases --region $REGION --query "knowledgeBaseSummaries[0].knowledgeBaseId" --output text)
+aws bedrock-agent delete-knowledge-base --knowledge-base-id $KB_ID --region $REGION
+```
+
 ### 4.3 Open Search
 
 ```bash
@@ -415,6 +436,15 @@ OPENSEARCH_COLLECTION_ID=$(aws opensearchserverless list-collections --query "co
 OPENSEARCH_ENDPOINT=$(aws opensearchserverless batch-get-collection --ids $OPENSEARCH_COLLECTION_ID --query 'collectionDetails[].collectionEndpoint' --output text)
 OPENSEARCH_HOST="${OPENSEARCH_ENDPOINT#https://*}"
 ```
+
+Cleanup Open Search
+
+```bash
+aws opensearchserverless list-collections --region $REGION
+COLLECTION_ID=$(aws opensearchserverless list-collections --region $REGION --query "collectionSummaries[].id" --output text)
+aws opensearchserverless delete-collection --id "$COLLECTION_ID" --region $REGION
+```
+
 
 ## 5. Cloudformation
 
