@@ -404,7 +404,9 @@ aws kms describe-key --region $REGION --key-id $KMS_KEY0 --query "KeyMetadata.Cr
 
 ## 4. Storage & Database
 
-### 4.1 S3 File Sharing
+### 4.1 S3
+
+File Sharing
 
 ```bash
 # Share file in S3 bucket using pre-signed URLs, with the maximum expiry of 1 week (604,800 seconds)
@@ -412,6 +414,16 @@ aws s3 presign s3://mys3bucket/folder/filename --expires-in 604800
 
 # Download file
 curl -o "filename" "https://mys3bucket.s3.{REGION}.amazonaws.com/folder/filename?..."
+```
+
+Cleanup S3
+
+```bash
+S3_BUCKETS=$(aws s3 ls | cut -d ' ' -f3 | xargs)
+for S3_BUCKET in $S3_BUCKETS; do
+    aws s3 rm --recursive s3://$S3_BUCKET  # Empty Bucket
+    aws s3 rb s3://$S3_BUCKET # --force    # Delete Bucket
+done
 ```
 
 ### 4.2 Bedrock Knowledge Bases
