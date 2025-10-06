@@ -213,7 +213,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 echo "export NVM_DIR=\"\$HOME/.nvm\"" >> ~/.bash_profile
-nvm install --lts
+nvm install --lts  # or nvm install 22
 ```
 
 Amplify Installation
